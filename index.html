@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JA Reciclagem de Metais — Balança</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-base:#050b16;
+  --bg-panel:#0d1b2f;
+  --bg-panel-2:#12233c;
+  --bg-elevated:#17304f;
+  --accent:#2f7dff;
+  --accent-2:#5b9dff;
+  --accent-glow: rgba(47,125,255,.35);
+  --steel:#8aa0c2;
+  --steel-dim:#4d6488;
+  --good:#34d399;
+  --good-glow:rgba(52,211,153,.35);
+  --bad:#f87171;
+  --bad-glow:rgba(248,113,113,.35);
+  --warn:#fbbf24;
+  --text:#eaf1fb;
+  --text-muted:#8ea3c4;
+  --border:#1e3a5f;
+  --radius:16px;
+  --radius-sm:10px;
+  --font-display:'Orbitron', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(47,125,255,.10), transparent 60%),
+    var(--bg-base);
+  color:var(--text);
+  font-family:var(--font-body);
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+button{font-family:inherit;}
+input,textarea{font-family:inherit;}
+::selection{background:var(--accent-glow);}
+
+/* ---------- layout shell ---------- */
+#appRoot{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 14px 10px 14px;
+  position:sticky;top:0;z-index:30;
+  background:linear-gradient(180deg, rgba(5,11,22,.97), rgba(5,11,22,.90) 70%, transparent);
+  backdrop-filter:blur(6px);
+}
+.icon-btn{
+  width:48px;height:48px;border-radius:14px;
+  background:var(--bg-panel-2);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:transform .12s ease, background .15s ease, border-color .15s ease;
+}
+.icon-btn:active{transform:scale(.92);background:var(--bg-elevated);}
+.brand{display:flex;flex-direction:column;align-items:center;line-height:1;user-select:none;}
+.brand-plate{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 16px;
+  border-radius:12px;
+  background:linear-gradient(180deg, var(--bg-elevated), var(--bg-panel-2));
+  border:1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 24px rgba(47,125,255,.08);
+}
+.brand-ja{
+  font-family:var(--font-display);font-weight:900;font-size:22px;letter-spacing:2px;
+  color:var(--accent-2);
+  text-shadow:0 0 14px var(--accent-glow);
+}
+.brand-sub{
+  font-size:9.5px;letter-spacing:2.2px;color:var(--steel);font-weight:700;margin-top:3px;
+}
+
+.statusbar{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  padding:2px 14px 10px;
+}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.dot.ok{background:var(--good);box-shadow:0 0 8px var(--good-glow);}
+.dot.off{background:var(--steel-dim);}
+.dot.err{background:var(--bad);box-shadow:0 0 8px var(--bad-glow);}
+
+.rivet-divider{
+  height:6px;margin:0 14px 8px;border-radius:4px;
+  background:repeating-linear-gradient(90deg, var(--steel-dim) 0 2px, transparent 2px 14px);
+  opacity:.5;
+}
+
+main{flex:1;padding:6px 14px 100px;}
+
+.hidden{display:none !important;}
+
+/* ---------- home ---------- */
+.hero-card{
+  background:linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:26px 18px;
+  text-align:center;
+  margin-bottom:18px;
+}
+.hero-icon{font-size:44px;margin-bottom:6px;filter:drop-shadow(0 0 18px var(--accent-glow));}
+.hero-title{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:.5px;margin:4px 0 4px;}
+.hero-desc{color:var(--text-muted);font-size:13.5px;margin:0 0 18px;}
+
+.btn{
+  border:none;border-radius:var(--radius-sm);
+  font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:transform .1s ease, filter .15s ease, opacity .15s ease;
+  user-select:none;
+}
+.btn:active{transform:scale(.98);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-primary{
+  width:100%;padding:18px 16px;font-size:17px;color:#fff;
+  background:linear-gradient(135deg, var(--accent), #1c5fd8);
+  box-shadow:0 8px 24px var(--accent-glow);
+}
+.btn-primary .ico{font-size:22px;}
+.btn-secondary{
+  width:100%;padding:15px 16px;font-size:15px;color:var(--text);
+  background:var(--bg-elevated);border:1px solid var(--border);
+}
+.btn-danger{
+  background:linear-gradient(135deg,#e5484d,#b32a2f);color:#fff;
+}
+.btn-good{
+  background:linear-gradient(135deg,#2fbb85,#1c8f63);color:#fff;
+}
+.btn-block-row{display:flex;gap:10px;}
+.btn-block-row .btn{flex:1;}
+
+.section-label{
+  font-size:11px;letter-spacing:1.6px;color:var(--steel);font-weight:700;
+  margin:22px 2px 10px;text-transform:uppercase;
+}
+.empty-note{
+  color:var(--text-muted);font-size:13px;text-align:center;padding:26px 10px;
+  border:1px dashed var(--border);border-radius:var(--radius-sm);
+}
+
+/* history */
+.hist-card{
+  background:var(--bg-panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:14px 14px;margin-bottom:10px;
+}
+.hist-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.hist-name{font-weight:700;font-size:15px;}
+.hist-tag{
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;
+}
+.hist-tag.sim{background:rgba(52,211,153,.15);color:var(--good);}
+.hist-tag.nao{background:rgba(138,160,194,.15);color:var(--steel);}
+.hist-meta{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:4px;}
+.hist-toggle{
+  font-size:12px;color:var(--accent-2);margin-top:8px;cursor:pointer;font-weight:600;
+}
+.hist-lines{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
+.hist-line{font-family:var(--font-mono);font-size:12.5px;color:var(--text);padding:3px 0;display:flex;justify-content:space-between;gap:8px;}
+.hist-line b{color:var(--accent-2);}
+
+/* ---------- weighing view ---------- */
+.balloon{
+  background:linear-gradient(160deg, var(--bg-panel-2), var(--bg-panel));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.balloon-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.balloon-title{font-size:16px;font-weight:800;}
+.balloon-sub{font-size:11px;color:var(--text-muted);font-family:var(--font-mono);}
+
+.item-line{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 4px;border-bottom:1px solid var(--border);
+  font-size:14px;
+}
+.item-line:last-child{border-bottom:none;}
+.item-left{color:var(--text);}
+.item-left .tag{color:var(--steel);font-weight:700;}
+.item-weight{
+  font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--accent-2);
+  text-shadow:0 0 10px var(--accent-glow);
+  white-space:nowrap;
+}
+.item-time{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);display:block;text-align:right;}
+
+.scale-readout{
+  text-align:center;padding:18px 10px 10px;
+}
+.scale-readout .lbl{font-size:10.5px;letter-spacing:2px;color:var(--steel);font-weight:700;margin-bottom:4px;}
+.scale-readout .val{
+  font-family:var(--font-display);font-weight:900;font-size:34px;color:var(--good);
+  text-shadow:0 0 20px var(--good-glow);
+  letter-spacing:1px;
+}
+.scale-readout .val.dim{color:var(--steel-dim);text-shadow:none;}
+
+.limit-note{
+  text-align:center;color:var(--warn);font-size:12.5px;font-weight:600;
+  background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);
+  border-radius:var(--radius-sm);padding:10px;margin-bottom:12px;
+}
+
+.field{margin-bottom:10px;}
+.field label{display:block;font-size:11.5px;color:var(--steel);font-weight:700;margin-bottom:6px;letter-spacing:.4px;}
+.field input, .field textarea{
+  width:100%;padding:14px 14px;border-radius:var(--radius-sm);
+  background:var(--bg-panel);border:1px solid var(--border);color:var(--text);
+  font-size:16px;outline:none;
+}
+.field input:focus, .field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.field.error input{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-glow);}
+.field-error-msg{color:var(--bad);font-size:12px;margin-top:6px;font-weight:600;}
+
+.add-form{
+  background:var(--bg-panel-2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin-bottom:14px;
+}
+.add-form-title{font-size:12px;letter-spacing:1.2px;color:var(--steel);font-weight:700;margin-bottom:10px;text-transform:uppercase;}
+
+.action-row{display:flex;gap:10px;margin-bottom:10px;}
+.action-row .btn{flex:1;}
+
+/* ---------- sidebar ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+}
+.overlay.show{opacity:1;pointer-events:auto;}
+
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:82%;max-width:320px;z-index:50;
+  background:var(--bg-panel);border-right:1px solid var(--border);
+  transform:translateX(-105%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;padding:16px;
+}
+.sidebar.open{transform:translateX(0);}
+.sidebar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.sidebar-title{font-size:14px;font-weight:800;letter-spacing:.6px;}
+.link-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg-panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px;margin-bottom:8px;
+}
+.link-item .link-info{flex:1;min-width:0;cursor:pointer;}
+.link-item .link-name{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-item .link-url{font-size:10.5px;color:var(--text-muted);font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-del{
+  width:32px;height:32px;border-radius:8px;flex:none;
+  background:rgba(248,113,113,.12);color:var(--bad);border:none;font-size:16px;cursor:pointer;
+}
+.sidebar-add{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+}
+.modal-overlay.show{opacity:1;pointer-events:auto;}
+.modal-box{
+  width:100%;max-width:520px;
+  background:var(--bg-panel);border:1px solid var(--border);
+  border-radius:20px 20px 0 0;
+  padding:20px 18px 26px;
+  transform:translateY(30px);transition:transform .25s cubic-bezier(.4,0,.2,1);
+  max-height:88vh;overflow-y:auto;
+}
+.modal-overlay.show .modal-box{transform:translateY(0);}
+.modal-title{font-size:17px;font-weight:800;margin:0 0 4px;}
+.modal-desc{color:var(--text-muted);font-size:13px;margin:0 0 16px;}
+.modal-close-x{
+  position:absolute;top:14px;right:14px;
+}
+
+/* toast */
+#toastWrap{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:480px;}
+.toast{
+  padding:13px 16px;border-radius:12px;font-size:13.5px;font-weight:600;
+  background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  animation:toastIn .2s ease;
+}
+.toast.ok{border-color:rgba(52,211,153,.4);}
+.toast.err{border-color:rgba(248,113,113,.4);}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.choice-row{display:flex;gap:12px;margin-top:6px;}
+.choice-btn{
+  flex:1;padding:20px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--bg-panel-2);color:var(--text);font-size:16px;font-weight:800;cursor:pointer;
+}
+.choice-btn:active{transform:scale(.97);}
+.choice-btn.yes{border-color:rgba(52,211,153,.4);}
+.choice-btn.yes:hover{background:rgba(52,211,153,.08);}
+.choice-btn.no{border-color:rgba(248,113,113,.35);}
+
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 4px;}
+.toggle-row .lbl{font-size:14px;font-weight:600;}
+.toggle-row .hint{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+.switch{position:relative;width:48px;height:28px;flex:none;}
+.switch input{opacity:0;width:0;height:0;}
+.switch .slider{
+  position:absolute;inset:0;background:var(--bg-elevated);border:1px solid var(--border);
+  border-radius:20px;cursor:pointer;transition:.15s;
+}
+.switch .slider::before{
+  content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;
+  background:var(--steel);border-radius:50%;transition:.15s;
+}
+.switch input:checked + .slider{background:rgba(47,125,255,.35);border-color:var(--accent);}
+.switch input:checked + .slider::before{transform:translateX(20px);background:var(--accent-2);}
+
+.small-note{font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-top:4px;}
+code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-family:var(--font-mono);font-size:11px;}
+</style>
+</head>
+<body>
+
+<div id="appRoot">
+
+  <div class="topbar">
+    <button class="icon-btn" id="btnSidebarOpen" aria-label="Abrir menu de links">☰</button>
+    <div class="brand">
+      <div class="brand-plate">
+        <span class="brand-ja">JA</span>
+      </div>
+      <span class="brand-sub">RECICLAGEM DE METAIS</span>
+    </div>
+    <button class="icon-btn" id="btnSettingsOpen" aria-label="Configurações">⚙</button>
+  </div>
+  <div class="statusbar" id="statusBar"></div>
+  <div class="rivet-divider"></div>
+
+  <main id="mainArea">
+
+    <!-- HOME VIEW -->
+    <section id="viewHome">
+      <div class="hero-card">
+        <div class="hero-icon">🚛⚖️</div>
+        <div class="hero-title">NOVA PESAGEM</div>
+        <p class="hero-desc">Registre a abertura e o fechamento de cada material descarregado.</p>
+        <button class="btn btn-primary" id="btnNovaPesagem"><span class="ico">＋</span> Iniciar pesagem</button>
+      </div>
+
+      <div class="section-label">Histórico de pesagens</div>
+      <div id="historyList"><div class="empty-note">Nenhuma pesagem registrada ainda.</div></div>
+    </section>
+
+    <!-- WEIGHING VIEW -->
+    <section id="viewWeighing" class="hidden">
+      <div class="balloon">
+        <div class="balloon-head">
+          <div>
+            <div class="balloon-title" id="wCliente">—</div>
+            <div class="balloon-sub" id="wMeta">—</div>
+          </div>
+          <span class="hist-tag" id="wCadastroTag">—</span>
+        </div>
+        <div id="wItemsList"></div>
+        <div class="scale-readout">
+          <div class="lbl">ÚLTIMO PESO REGISTRADO</div>
+          <div class="val" id="wLastWeight">—</div>
+        </div>
+      </div>
+
+      <div id="wLimitNote" class="limit-note hidden">Limite de 25 itens atingido. Finalize a pesagem para continuar.</div>
+
+      <div class="add-form" id="wAddForm">
+        <div class="add-form-title" id="wAddFormTitle">Registrar abertura</div>
+
+        <div class="field" id="fieldMaterial">
+          <label>Nome do material</label>
+          <input type="text" id="inpMaterial" placeholder="Ex: Lata, Miúda, Ferro..." autocomplete="off">
+        </div>
+
+        <div class="field" id="fieldPeso">
+          <label id="lblPeso">Peso (kg)</label>
+          <input type="text" id="inpPeso" inputmode="decimal" placeholder="Ex: 550">
+          <div class="field-error-msg hidden" id="pesoErrorMsg"></div>
+        </div>
+
+        <button class="btn btn-primary" id="btnAddItem" style="width:100%;">Registrar</button>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-secondary" id="btnUndo">↺ Desfazer último</button>
+        <button class="btn btn-secondary" id="btnCancelWeighing">✕ Cancelar</button>
+      </div>
+      <button class="btn btn-good" id="btnFinalizar" style="width:100%;padding:18px;font-size:16px;">✔ Finalizar pesagem</button>
+    </section>
+
+  </main>
+</div>
+
+<!-- SIDEBAR -->
+<div class="overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-title">🔗 LINKS EXTERNOS</div>
+    <button class="icon-btn" id="btnSidebarClose">✕</button>
+  </div>
+  <div id="linksList"></div>
+  <div class="sidebar-add">
+    <div class="field">
+      <label>Nome do link</label>
+      <input type="text" id="inpLinkNome" placeholder="Ex: Cotação de metais">
+    </div>
+    <div class="field">
+      <label>URL</label>
+      <input type="text" id="inpLinkUrl" placeholder="https://...">
+      <div class="field-error-msg hidden" id="linkErrorMsg"></div>
+    </div>
+    <button class="btn btn-primary" id="btnAddLink" style="width:100%;">＋ Adicionar link</button>
+  </div>
+</div>
+
+<!-- MODAL: CADASTRO -->
+<div class="modal-overlay" id="modalCadastro">
+  <div class="modal-box">
+    <div class="modal-title">Você tem cadastro?</div>
+    <p class="modal-desc">Selecione uma opção para continuar a pesagem.</p>
+    <div class="choice-row">
+      <button class="choice-btn yes" id="btnCadastroSim">SIM</button>
+      <button class="choice-btn no" id="btnCadastroNao">NÃO</button>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:14px;" id="btnCadastroCancelar">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL: NOME CLIENTE -->
+<div class="modal-overlay" id="modalNome">
+  <div class="modal-box">
+    <div class="modal-title">Nome do cliente</div>
+    <p class="modal-desc">Informe o nome para abrir a pesagem.</p>
+    <div class="field" id="fieldNome">
+      <input type="text" id="inpNomeCliente" placeholder="Nome completo" autocomplete="off">
+      <div class="field-error-msg hidden" id="nomeErrorMsg">Informe um nome válido.</div>
+    </div>
+    <div class="btn-block-row" style="margin-top:8px;">
+      <button class="btn btn-secondary" id="btnNomeCancelar">Cancelar</button>
+      <button class="btn btn-primary" id="btnNomeConfirmar">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR FINALIZAÇÃO -->
+<div class="modal-overlay" id="modalFinalizar">
+  <div class="modal-box">
+    <div class="modal-title">Finalizar pesagem?</div>
+    <p class="modal-desc" id="finalizarResumo">—</p>
+    <div class="btn-block-row">
+      <button class="btn btn-secondary" id="btnFinalizarCancelar">Voltar</button>
+      <button class="btn btn-good" id="btnFinalizarConfirmar">Confirmar e enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CANCELAR PESAGEM -->
+<div class="modal-overlay" id="modalCancelar">
+  <div class="modal-box">
+    <div class="modal-title">Cancelar pesagem?</div>
+    <p class="modal-desc">Os itens registrados nesta pesagem serão descartados. Essa ação não pode ser desfeita.</p>
+    <div class="btn-block-row">
+      <button class="btn btn-secondary" id="btnCancelarVoltar">Voltar</button>
+      <button class="btn btn-danger" id="btnCancelarConfirmar">Sim, cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SETTINGS -->
+<div class="modal-overlay" id="modalSettings">
+  <div class="modal-box">
+    <div class="modal-title">⚙ Configurações</div>
+    <p class="modal-desc">Conecte o Firebase e identifique este celular.</p>
+
+    <div class="field">
+      <label>Nome deste celular / computador</label>
+      <input type="text" id="inpDeviceName" placeholder="Ex: Balança - Portaria">
+    </div>
+
+    <div class="field">
+      <label>URL do Realtime Database</label>
+      <input type="text" id="inpDbUrl" placeholder="https://seuprojeto-default-rtdb.firebaseio.com" style="font-family:var(--font-mono);font-size:12.5px;">
+      <div class="field-error-msg hidden" id="configErrorMsg"></div>
+      <p class="small-note">Cole aqui apenas o link do seu <b>Realtime Database</b>, disponível no console do Firebase (Compilação → Realtime Database). Algo como <code class="inline">https://seuprojeto-default-rtdb.firebaseio.com</code>. Deixe em branco para trabalhar apenas neste aparelho, salvando localmente.</p>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="lbl">Modo teste</div>
+        <div class="hint">Grava em uma coleção separada (pesagens_teste) para não misturar com dados reais.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="inpModoTeste">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="btn-block-row" style="margin-top:14px;">
+      <button class="btn btn-secondary" id="btnSettingsCancelar">Fechar</button>
+      <button class="btn btn-primary" id="btnSettingsSalvar">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ========================================================================
+   UTILIDADES
+======================================================================== */
+function escapeHtml(str){
+  return String(str == null ? "" : str)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+function parsePeso(raw){
+  if (raw == null) return NaN;
+  var s = String(raw).trim().replace(/\./g,"").replace(",", ".");
+  // if user typed "550.5" (dot as decimal, no thousands), handle separately
+  if (/^\d+\.\d+$/.test(String(raw).trim())) s = String(raw).trim();
+  var n = parseFloat(s);
+  return n;
+}
+function fmtKg(n){
+  if (n == null || isNaN(n)) return "—";
+  var s = (Math.round(n*100)/100).toString().replace(".", ",");
+  return s + " kg";
+}
+function nowLabel(){
+  var d = new Date();
+  return d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+}
+function fmtDateTime(d){
+  try{
+    return d.toLocaleDateString('pt-BR') + " " + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  }catch(e){ return "—"; }
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function toast(msg, type){
+  var wrap = document.getElementById('toastWrap');
+  var el = document.createElement('div');
+  el.className = 'toast ' + (type === 'err' ? 'err' : type === 'ok' ? 'ok' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(function(){
+    el.style.transition = 'opacity .25s ease';
+    el.style.opacity = '0';
+    setTimeout(function(){ el.remove(); }, 260);
+  }, 3200);
+}
+
+/* ========================================================================
+   PERSISTÊNCIA LOCAL (settings, links, fila local)
+======================================================================== */
+var LS_CONFIG = 'ja_config_v1';
+var LS_LINKS = 'ja_links_v1';
+var LS_LOCAL_RECORDS = 'ja_local_records_v1';
+
+function loadJSON(key, fallback){
+  try{
+    var raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    var parsed = JSON.parse(raw);
+    return parsed == null ? fallback : parsed;
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e){ toast('Não foi possível salvar localmente neste navegador.', 'err'); return false; }
+}
+
+var config = loadJSON(LS_CONFIG, { dbUrl: null, testMode: false, deviceName: "" });
+var links = loadJSON(LS_LINKS, []);
+
+/* ========================================================================
+   FIREBASE (Realtime Database via REST + SSE — somente a URL é necessária)
+======================================================================== */
+var firebaseReady = false;
+var firebaseError = "";
+var esHistory = null;      // EventSource (stream em tempo real)
+var historyMap = {};       // key (push id) -> registro
+var historyRecords = [];   // array ordenado (mais recente primeiro) para renderização
+var reconnectTimer = null;
+
+function collectionName(){
+  return config.testMode ? 'pesagens_teste' : 'pesagens';
+}
+
+function baseUrl(){
+  if (!config.dbUrl) return null;
+  return String(config.dbUrl).trim().replace(/\/+$/,'');
+}
+
+function teardownConnection(){
+  if (esHistory){ try{ esHistory.close(); }catch(e){} esHistory = null; }
+  if (reconnectTimer){ clearTimeout(reconnectTimer); reconnectTimer = null; }
+  firebaseReady = false;
+}
+
+function initFirebase(){
+  teardownConnection();
+  firebaseError = "";
+  historyMap = {};
+  var b = baseUrl();
+  if (!b){
+    renderStatusBar();
+    renderHistoryFromLocal();
+    return;
+  }
+  renderStatusBar();
+  subscribeHistory();
+}
+
+function subscribeHistory(){
+  var b = baseUrl();
+  if (!b || typeof EventSource === 'undefined') return;
+  var url = b + '/' + collectionName() + '.json';
+
+  try{
+    esHistory = new EventSource(url);
+  }catch(e){
+    firebaseReady = false;
+    firebaseError = "URL inválida";
+    renderStatusBar();
+    renderHistoryFromLocal();
+    return;
+  }
+
+  esHistory.addEventListener('put', function(e){
+    try{
+      var payload = JSON.parse(e.data);
+      applyStreamEvent(payload.path, payload.data, true);
+      firebaseReady = true;
+      firebaseError = "";
+      renderStatusBar();
+    }catch(err){ /* ignora eventos malformados */ }
+  });
+
+  esHistory.addEventListener('patch', function(e){
+    try{
+      var payload = JSON.parse(e.data);
+      applyStreamEvent(payload.path, payload.data, false);
+    }catch(err){ /* ignora eventos malformados */ }
+  });
+
+  esHistory.addEventListener('auth_revoked', function(){
+    firebaseReady = false;
+    firebaseError = "Acesso negado (verifique as regras do banco)";
+    renderStatusBar();
+  });
+
+  esHistory.onerror = function(){
+    firebaseReady = false;
+    firebaseError = "Sem conexão em tempo real";
+    renderStatusBar();
+    // EventSource tenta reconectar sozinho; mantemos o histórico local como apoio.
+    renderHistoryFromLocal();
+  };
+}
+
+function applyStreamEvent(path, data, isPut){
+  path = path || '/';
+  if (path === '/'){
+    if (data === null){
+      historyMap = {};
+    } else if (isPut){
+      historyMap = (data && typeof data === 'object') ? data : {};
+    } else if (data && typeof data === 'object'){
+      Object.keys(data).forEach(function(k){
+        if (data[k] === null) delete historyMap[k];
+        else historyMap[k] = data[k];
+      });
+    }
+  } else {
+    var parts = path.replace(/^\//,'').split('/');
+    var key = parts[0];
+    if (parts.length === 1){
+      if (data === null) delete historyMap[key];
+      else historyMap[key] = data;
+    } else {
+      // atualização em um campo específico do registro (patch aninhado)
+      if (!historyMap[key] || typeof historyMap[key] !== 'object') historyMap[key] = {};
+      var sub = parts[1];
+      if (data === null) delete historyMap[key][sub];
+      else historyMap[key][sub] = data;
+    }
+  }
+  rebuildHistoryFromMap();
+}
+
+function rebuildHistoryFromMap(){
+  var arr = Object.keys(historyMap).map(function(k){ return historyMap[k]; }).filter(function(r){ return r && typeof r === 'object'; });
+  arr.sort(function(a,b){ return (b.criadoEmTS || 0) - (a.criadoEmTS || 0); });
+  historyRecords = arr.slice(0, 50);
+  renderHistory();
+}
+
+function saveToLocalQueue(record){
+  var local = loadJSON(LS_LOCAL_RECORDS, []);
+  local.unshift(record);
+  saveJSON(LS_LOCAL_RECORDS, local.slice(0, 50));
+}
+
+function saveRecord(record, onDone){
+  var recordWithTs = Object.assign({}, record, { criadoEmTS: Date.now() });
+  var b = baseUrl();
+
+  if (b){
+    var url = b + '/' + collectionName() + '.json';
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(recordWithTs)
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(){
+      toast('Pesagem enviada com sucesso.', 'ok');
+      if (onDone) onDone(true);
+    }).catch(function(err){
+      saveToLocalQueue(recordWithTs);
+      toast('Falha ao enviar (verifique a URL/regras). Pesagem salva localmente.', 'err');
+      renderHistoryFromLocal();
+      if (onDone) onDone(false);
+    });
+  } else {
+    saveToLocalQueue(recordWithTs);
+    toast('URL do Firebase não configurada. Pesagem salva localmente.', 'ok');
+    renderHistoryFromLocal();
+    if (onDone) onDone(true);
+  }
+}
+
+function renderHistoryFromLocal(){
+  if (baseUrl()) return; // se há URL configurada, o histórico vem do stream em tempo real
+  var local = loadJSON(LS_LOCAL_RECORDS, []);
+  historyRecords = local;
+  renderHistory();
+}
+
+/* ========================================================================
+   ESTADO DA PESAGEM
+======================================================================== */
+var MAX_ITENS = 25;
+
+var state = {
+  view: 'home',
+  cadastro: null,
+  clienteNome: '',
+  itens: [] // {tipo:'abertura'|'material', nome, peso, horaLabel}
+};
+
+function pesoAnterior(){
+  if (state.itens.length === 0) return Infinity;
+  return state.itens[state.itens.length - 1].peso;
+}
+
+function resetWeighing(){
+  state.view = 'home';
+  state.cadastro = null;
+  state.clienteNome = '';
+  state.itens = [];
+}
+
+/* ========================================================================
+   MODALS
+======================================================================== */
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function closeAllModals(){
+  ['modalCadastro','modalNome','modalFinalizar','modalCancelar','modalSettings'].forEach(closeModal);
+}
+
+/* ========================================================================
+   RENDER: STATUS BAR
+======================================================================== */
+function renderStatusBar(){
+  var el = document.getElementById('statusBar');
+  var deviceLabel = config.deviceName ? escapeHtml(config.deviceName) : 'não identificado';
+  var dotClass = 'off';
+  var label = 'Modo local (sem Firebase)';
+  if (config.dbUrl){
+    if (firebaseReady && !firebaseError){
+      dotClass = 'ok';
+      label = config.testMode ? 'Conectado · modo teste' : 'Conectado';
+    } else {
+      dotClass = 'err';
+      label = firebaseError || 'Conectando...';
+    }
+  }
+  el.innerHTML =
+    '<span class="dot ' + dotClass + '"></span>' +
+    '<span>' + label + ' · ' + deviceLabel + '</span>';
+}
+
+/* ========================================================================
+   RENDER: HOME / HISTÓRICO
+======================================================================== */
+function renderHistory(){
+  var wrap = document.getElementById('historyList');
+  if (!historyRecords || historyRecords.length === 0){
+    wrap.innerHTML = '<div class="empty-note">Nenhuma pesagem registrada ainda.</div>';
+    return;
+  }
+  var html = '';
+  historyRecords.forEach(function(rec, idx){
+    var cadastroTagClass = rec.cadastro ? 'sim' : 'nao';
+    var cadastroTagText = rec.cadastro ? 'CADASTRO' : 'SEM CADASTRO';
+    var dataStr = rec.criadoEmLabel ? escapeHtml(rec.criadoEmLabel) : '';
+    var device = rec.dispositivo ? escapeHtml(rec.dispositivo) : 'desconhecido';
+    var itensHtml = '';
+    (rec.itens || []).forEach(function(it){
+      var label = it.tipo === 'abertura' ? 'Abrir' : ('Fechar peso ' + escapeHtml(it.nome || ''));
+      itensHtml += '<div class="hist-line"><span>' + label + ' <span style="color:var(--text-muted)">(abaixo)</span></span><b>' + fmtKg(it.peso) + '</b></div>';
+    });
+    html +=
+      '<div class="hist-card">' +
+        '<div class="hist-top">' +
+          '<div class="hist-name">' + escapeHtml(rec.cliente || 'Sem nome') + '</div>' +
+          '<span class="hist-tag ' + cadastroTagClass + '">' + cadastroTagText + '</span>' +
+        '</div>' +
+        '<div class="hist-meta">' + dataStr + ' · ' + device + '</div>' +
+        '<div class="hist-toggle" data-idx="' + idx + '">Ver materiais ▾</div>' +
+        '<div class="hist-lines hidden" data-lines="' + idx + '">' + itensHtml + '</div>' +
+      '</div>';
+  });
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.hist-toggle').forEach(function(t){
+    t.addEventListener('click', function(){
+      var i = t.getAttribute('data-idx');
+      var linesEl = wrap.querySelector('[data-lines="'+i+'"]');
+      var isHidden = linesEl.classList.contains('hidden');
+      linesEl.classList.toggle('hidden');
+      t.textContent = isHidden ? 'Ocultar materiais ▴' : 'Ver materiais ▾';
+    });
+  });
+}
+
+/* ========================================================================
+   RENDER: WEIGHING VIEW
+======================================================================== */
+function renderWeighing(){
+  document.getElementById('wCliente').textContent = state.clienteNome || '—';
+  document.getElementById('wMeta').textContent = state.itens.length + ' de ' + MAX_ITENS + ' itens registrados';
+
+  var tagEl = document.getElementById('wCadastroTag');
+  tagEl.textContent = state.cadastro ? 'CADASTRO' : 'SEM CADASTRO';
+  tagEl.className = 'hist-tag ' + (state.cadastro ? 'sim' : 'nao');
+
+  var listEl = document.getElementById('wItemsList');
+  if (state.itens.length === 0){
+    listEl.innerHTML = '<div class="empty-note">Registre o peso de abertura para iniciar.</div>';
+  } else {
+    var html = '';
+    state.itens.forEach(function(it){
+      var label = it.tipo === 'abertura'
+        ? 'Abrir <span class="tag">(abaixo)</span>'
+        : ('Fechar peso ' + escapeHtml(it.nome) + ' <span class="tag">(abaixo)</span>');
+      html +=
+        '<div class="item-line">' +
+          '<div class="item-left">' + label + '</div>' +
+          '<div><div class="item-weight">' + fmtKg(it.peso) + '</div><span class="item-time">' + escapeHtml(it.horaLabel) + '</span></div>' +
+        '</div>';
+    });
+    listEl.innerHTML = html;
+  }
+
+  var lastWeightEl = document.getElementById('wLastWeight');
+  if (state.itens.length === 0){
+    lastWeightEl.textContent = '—';
+    lastWeightEl.classList.add('dim');
+  } else {
+    lastWeightEl.textContent = fmtKg(pesoAnterior());
+    lastWeightEl.classList.remove('dim');
+  }
+
+  var atLimit = state.itens.length >= MAX_ITENS;
+  document.getElementById('wLimitNote').classList.toggle('hidden', !atLimit);
+  document.getElementById('wAddForm').classList.toggle('hidden', atLimit);
+
+  var isAbertura = state.itens.length === 0;
+  document.getElementById('wAddFormTitle').textContent = isAbertura ? 'Registrar abertura' : 'Fechar peso de material';
+  document.getElementById('fieldMaterial').classList.toggle('hidden', isAbertura);
+  document.getElementById('lblPeso').textContent = isAbertura ? 'Peso de abertura (kg)' : 'Peso ao fechar (kg)';
+  document.getElementById('btnAddItem').textContent = isAbertura ? 'Registrar abertura' : 'Fechar peso do material';
+
+  document.getElementById('btnUndo').disabled = state.itens.length === 0;
+  document.getElementById('btnFinalizar').disabled = state.itens.length < 2;
+
+  clearPesoError();
+}
+
+function clearPesoError(){
+  document.getElementById('fieldPeso').classList.remove('error');
+  document.getElementById('pesoErrorMsg').classList.add('hidden');
+}
+function showPesoError(msg){
+  document.getElementById('fieldPeso').classList.add('error');
+  var el = document.getElementById('pesoErrorMsg');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+/* ========================================================================
+   RENDER: SIDEBAR LINKS
+======================================================================== */
+function renderLinks(){
+  var wrap = document.getElementById('linksList');
+  if (!links.length){
+    wrap.innerHTML = '<div class="empty-note">Nenhum link adicionado.</div>';
+    return;
+  }
+  var html = '';
+  links.forEach(function(l){
+    html +=
+      '<div class="link-item">' +
+        '<div class="link-info" data-url="' + escapeHtml(l.url) + '">' +
+          '<div class="link-name">' + escapeHtml(l.nome) + '</div>' +
+          '<div class="link-url">' + escapeHtml(l.url) + '</div>' +
+        '</div>' +
+        '<button class="link-del" data-id="' + escapeHtml(l.id) + '">✕</button>' +
+      '</div>';
+  });
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.link-info').forEach(function(el){
+    el.addEventListener('click', function(){
+      var url = el.getAttribute('data-url');
+      window.open(url, '_blank', 'noopener');
+    });
+  });
+  wrap.querySelectorAll('.link-del').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-id');
+      links = links.filter(function(l){ return l.id !== id; });
+      saveJSON(LS_LINKS, links);
+      renderLinks();
+    });
+  });
+}
+
+/* ========================================================================
+   RENDER: VIEW SWITCH
+======================================================================== */
+function renderView(){
+  document.getElementById('viewHome').classList.toggle('hidden', state.view !== 'home');
+  document.getElementById('viewWeighing').classList.toggle('hidden', state.view !== 'weighing');
+  if (state.view === 'weighing') renderWeighing();
+}
+
+/* ========================================================================
+   AÇÕES: FLUXO DE PESAGEM
+======================================================================== */
+document.getElementById('btnNovaPesagem').addEventListener('click', function(){
+  state.cadastro = null;
+  state.clienteNome = '';
+  document.getElementById('inpNomeCliente').value = '';
+  openModal('modalCadastro');
+});
+
+document.getElementById('btnCadastroCancelar').addEventListener('click', function(){
+  closeModal('modalCadastro');
+});
+
+document.getElementById('btnCadastroSim').addEventListener('click', function(){
+  state.cadastro = true;
+  closeModal('modalCadastro');
+  openModal('modalNome');
+  setTimeout(function(){ document.getElementById('inpNomeCliente').focus(); }, 260);
+});
+document.getElementById('btnCadastroNao').addEventListener('click', function(){
+  state.cadastro = false;
+  closeModal('modalCadastro');
+  openModal('modalNome');
+  setTimeout(function(){ document.getElementById('inpNomeCliente').focus(); }, 260);
+});
+
+document.getElementById('btnNomeCancelar').addEventListener('click', function(){
+  closeModal('modalNome');
+});
+
+function confirmNome(){
+  var val = document.getElementById('inpNomeCliente').value.trim();
+  if (!val){
+    document.getElementById('fieldNome').classList.add('error');
+    document.getElementById('nomeErrorMsg').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('fieldNome').classList.remove('error');
+  document.getElementById('nomeErrorMsg').classList.add('hidden');
+
+  state.clienteNome = val;
+  state.itens = [];
+  state.view = 'weighing';
+  closeModal('modalNome');
+  renderView();
+}
+document.getElementById('btnNomeConfirmar').addEventListener('click', confirmNome);
+document.getElementById('inpNomeCliente').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') confirmNome();
+});
+
+document.getElementById('btnAddItem').addEventListener('click', function(){
+  clearPesoError();
+  var isAbertura = state.itens.length === 0;
+  var pesoRaw = document.getElementById('inpPeso').value;
+  var peso = parsePeso(pesoRaw);
+
+  if (isNaN(peso) || peso <= 0){
+    showPesoError('Informe um peso válido, maior que zero.');
+    return;
+  }
+  if (state.itens.length > 0 && peso >= pesoAnterior()){
+    showPesoError('O peso não pode ser maior ou igual ao peso anterior (' + fmtKg(pesoAnterior()) + ').');
+    return;
+  }
+  if (state.itens.length >= MAX_ITENS){
+    toast('Limite de ' + MAX_ITENS + ' itens atingido.', 'err');
+    return;
+  }
+
+  var item;
+  if (isAbertura){
+    item = { tipo:'abertura', nome:null, peso: peso, horaLabel: nowLabel() };
+  } else {
+    var nomeMaterial = document.getElementById('inpMaterial').value.trim();
+    if (!nomeMaterial){
+      document.getElementById('fieldMaterial').classList.add('error');
+      toast('Informe o nome do material.', 'err');
+      return;
+    }
+    document.getElementById('fieldMaterial').classList.remove('error');
+    item = { tipo:'material', nome: nomeMaterial, peso: peso, horaLabel: nowLabel() };
+  }
+
+  state.itens.push(item);
+  document.getElementById('inpPeso').value = '';
+  document.getElementById('inpMaterial').value = '';
+  renderWeighing();
+});
+
+document.getElementById('btnUndo').addEventListener('click', function(){
+  if (state.itens.length === 0) return;
+  state.itens.pop();
+  renderWeighing();
+});
+
+document.getElementById('btnCancelWeighing').addEventListener('click', function(){
+  openModal('modalCancelar');
+});
+document.getElementById('btnCancelarVoltar').addEventListener('click', function(){
+  closeModal('modalCancelar');
+});
+document.getElementById('btnCancelarConfirmar').addEventListener('click', function(){
+  closeModal('modalCancelar');
+  resetWeighing();
+  renderView();
+  toast('Pesagem cancelada.');
+});
+
+document.getElementById('btnFinalizar').addEventListener('click', function(){
+  if (state.itens.length < 2){
+    toast('Registre ao menos a abertura e um material antes de finalizar.', 'err');
+    return;
+  }
+  var resumo = document.getElementById('finalizarResumo');
+  resumo.innerHTML =
+    'Cliente: <b>' + escapeHtml(state.clienteNome) + '</b><br>' +
+    'Itens registrados: <b>' + state.itens.length + '</b><br>' +
+    'Este resumo será enviado para todos os dispositivos conectados.';
+  openModal('modalFinalizar');
+});
+document.getElementById('btnFinalizarCancelar').addEventListener('click', function(){
+  closeModal('modalFinalizar');
+});
+document.getElementById('btnFinalizarConfirmar').addEventListener('click', function(){
+  var btn = document.getElementById('btnFinalizarConfirmar');
+  btn.disabled = true;
+  var now = new Date();
+  var record = {
+    cliente: state.clienteNome,
+    cadastro: !!state.cadastro,
+    dispositivo: config.deviceName || 'não identificado',
+    criadoEmLabel: fmtDateTime(now),
+    itens: state.itens.map(function(it){
+      return { tipo: it.tipo, nome: it.nome, peso: it.peso, horaLabel: it.horaLabel };
+    })
+  };
+  saveRecord(record, function(){
+    btn.disabled = false;
+    closeModal('modalFinalizar');
+    resetWeighing();
+    renderView();
+  });
+});
+
+/* ========================================================================
+   SIDEBAR
+======================================================================== */
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+document.getElementById('btnSidebarOpen').addEventListener('click', openSidebar);
+document.getElementById('btnSidebarClose').addEventListener('click', closeSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+document.getElementById('btnAddLink').addEventListener('click', function(){
+  var nome = document.getElementById('inpLinkNome').value.trim();
+  var url = document.getElementById('inpLinkUrl').value.trim();
+  var errEl = document.getElementById('linkErrorMsg');
+  errEl.classList.add('hidden');
+
+  if (!nome || !url){
+    errEl.textContent = 'Informe nome e URL do link.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  if (!/^https?:\/\//i.test(url)){
+    url = 'https://' + url;
+  }
+  try{ new URL(url); }
+  catch(e){
+    errEl.textContent = 'URL inválida.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  links.push({ id: uid(), nome: nome, url: url });
+  saveJSON(LS_LINKS, links);
+  document.getElementById('inpLinkNome').value = '';
+  document.getElementById('inpLinkUrl').value = '';
+  renderLinks();
+  toast('Link adicionado.', 'ok');
+});
+
+/* ========================================================================
+   SETTINGS
+======================================================================== */
+document.getElementById('btnSettingsOpen').addEventListener('click', function(){
+  document.getElementById('inpDeviceName').value = config.deviceName || '';
+  document.getElementById('inpDbUrl').value = config.dbUrl || '';
+  document.getElementById('inpModoTeste').checked = !!config.testMode;
+  document.getElementById('configErrorMsg').classList.add('hidden');
+  openModal('modalSettings');
+});
+document.getElementById('btnSettingsCancelar').addEventListener('click', function(){
+  closeModal('modalSettings');
+});
+document.getElementById('btnSettingsSalvar').addEventListener('click', function(){
+  var deviceName = document.getElementById('inpDeviceName').value.trim();
+  var rawUrl = document.getElementById('inpDbUrl').value.trim();
+  var testMode = document.getElementById('inpModoTeste').checked;
+  var errEl = document.getElementById('configErrorMsg');
+  errEl.classList.add('hidden');
+
+  var dbUrl = null;
+  if (rawUrl){
+    if (!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/i.test(rawUrl.replace(/\/+$/,''))){
+      errEl.textContent = 'URL inválida. Use o link do Realtime Database, algo como https://seuprojeto-default-rtdb.firebaseio.com (sem barras ou caminhos extras no final).';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    dbUrl = rawUrl.replace(/\/+$/,'');
+  }
+
+  config.deviceName = deviceName;
+  config.dbUrl = dbUrl;
+  config.testMode = testMode;
+  saveJSON(LS_CONFIG, config);
+
+  closeModal('modalSettings');
+  toast('Configurações salvas.', 'ok');
+  initFirebase();
+});
+
+/* ========================================================================
+   INIT
+======================================================================== */
+renderLinks();
+renderStatusBar();
+initFirebase();
+renderView();
+
+})();
+</script>
+</body>
+</html>
