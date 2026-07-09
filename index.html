@@ -191,6 +191,37 @@ main{flex:1;padding:6px 14px 100px;}
   border:1px solid var(--border);display:block;
 }
 .hist-photo-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.hist-photo-item{
+  position:relative;width:80px;height:80px;flex:none;
+  border-radius:8px;overflow:hidden;
+  border:1px solid var(--border);background:var(--bg-panel);
+  cursor:pointer;
+  transition:transform .12s ease, border-color .12s ease;
+}
+.hist-photo-item:active{transform:scale(.96);}
+.hist-photo-item:hover{border-color:var(--accent);}
+.hist-photo-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.hist-photo-num{
+  position:absolute;top:3px;left:3px;
+  background:rgba(0,0,0,.7);color:#fff;
+  font-size:9px;font-weight:800;letter-spacing:.3px;
+  padding:1px 5px;border-radius:8px;
+  font-family:var(--font-mono);
+}
+.hist-photo-lbl{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg, transparent, rgba(0,0,0,.8));
+  color:#fff;
+  font-size:8.5px;font-weight:700;letter-spacing:.3px;
+  padding:8px 3px 3px;
+  text-align:center;
+  text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hist-photo-empty{
+  font-size:11px;color:var(--text-muted);font-style:italic;
+  margin-top:8px;
+}
 .hist-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
 .hist-actions .btn{padding:9px 10px;font-size:12px;flex:1;min-width:120px;}
 
@@ -1062,7 +1093,11 @@ function applyStreamEvent(path, data, isPut){
 }
 
 function rebuildHistoryFromMap(){
-  var arr = Object.keys(historyMap).map(function(k){ return historyMap[k]; }).filter(function(r){ return r && typeof r === 'object'; });
+  var arr = Object.keys(historyMap).map(function(k){
+    var rec = historyMap[k];
+    if (rec && typeof rec === 'object') rec._key = k;
+    return rec;
+  }).filter(function(r){ return r && typeof r === 'object'; });
   arr.sort(function(a,b){ return (b.criadoEmTS || 0) - (a.criadoEmTS || 0); });
   historyRecords = arr.slice(0, 100);
   renderHistory();
@@ -1152,7 +1187,10 @@ function saveRecord(record, onDone){
 function renderHistoryFromLocal(){
   if (baseUrl()) return;
   var local = loadJSON(LS_LOCAL_RECORDS, []);
-  historyRecords = local;
+  historyRecords = local.map(function(r, i){
+    if (r && typeof r === 'object' && !r._key) r._key = r.firebaseKey || ('local_' + i);
+    return r;
+  });
   renderHistory();
   renderStages();
 }
@@ -1262,11 +1300,30 @@ function buildHistCardHtml(rec, idx){
     var label = it.tipo === 'abertura' ? 'Abertura' : ('Fechar ' + escapeHtml(it.nome || ''));
     itensHtml += '<div class="hist-line"><span>' + label + '</span><b>' + (it.foto ? '📷 foto' : '—') + '</b></div>';
   });
-  var firstFoto = (rec.itens && rec.itens[0] && rec.itens[0].foto) ? rec.itens[0].foto : null;
+
+  // Galeria com TODAS as fotos da pesagem (clicáveis para abrir o lightbox)
+  var fotosComIndice = [];
+  (rec.itens || []).forEach(function(it, i){
+    if (it && it.foto) fotosComIndice.push({ foto: it.foto, it: it, idx: i });
+  });
   var photoHtml = '';
-  if (firstFoto){
-    photoHtml = '<div class="hist-photo-row"><img class="hist-photo-thumb" src="' + firstFoto + '" alt="Foto da pesagem"></div>';
+  if (fotosComIndice.length > 0){
+    photoHtml = '<div class="hist-photo-row">';
+    fotosComIndice.forEach(function(f){
+      var tagShort = f.it.tipo === 'abertura' ? 'ABERTURA' : 'FECHAR';
+      var tagFull  = tagShort + (f.it.nome ? ' · ' + escapeHtml(f.it.nome) : '');
+      photoHtml +=
+        '<div class="hist-photo-item" data-rec-key="' + escapeHtml(rec._key || '') + '" data-photo-idx="' + f.idx + '">' +
+          '<img src="' + f.foto + '" alt="Foto ' + (f.idx+1) + '">' +
+          '<span class="hist-photo-num">' + (f.idx+1) + '</span>' +
+          '<span class="hist-photo-lbl">' + tagFull + '</span>' +
+        '</div>';
+    });
+    photoHtml += '</div>';
+  } else {
+    photoHtml = '<div class="hist-photo-empty">Nenhuma foto anexada.</div>';
   }
+
   return ''+
     '<div class="hist-card">' +
       '<div class="hist-top">' +
@@ -1300,6 +1357,17 @@ function renderHistory(){
       var isHidden = linesEl.classList.contains('hidden');
       linesEl.classList.toggle('hidden');
       t.textContent = isHidden ? 'Ocultar materiais ▴' : 'Ver materiais ▾';
+    });
+  });
+
+  // Clique em uma miniatura do histórico -> abre o lightbox com a foto ampliada
+  wrap.querySelectorAll('.hist-photo-item').forEach(function(node){
+    node.addEventListener('click', function(){
+      var recKey = node.getAttribute('data-rec-key');
+      var photoIdx = parseInt(node.getAttribute('data-photo-idx'), 10);
+      var rec = findRecordByKey(recKey);
+      if (!rec || !rec.itens || rec.itens.length === 0) return;
+      openLightbox(isNaN(photoIdx) ? 0 : photoIdx, rec.itens);
     });
   });
 }
@@ -1389,10 +1457,16 @@ function openDetalheModal(key, forcedStage){
   if (rec.formaPagamento) sub.push('💳 ' + rec.formaPagamento.toUpperCase());
   document.getElementById('detalheSub').textContent = sub.join(' · ');
 
+  // Galeria com TODAS as fotos da pesagem no modal de detalhes
+  var detalheItensEl = document.getElementById('detalheItens');
+  var fotos = (rec.itens || []).filter(function(it){ return it && it.foto; });
   var fotoEl = document.getElementById('detalheFoto');
-  var firstFoto = (rec.itens && rec.itens[0] && rec.itens[0].foto) ? rec.itens[0].foto : null;
-  if (firstFoto){ fotoEl.src = firstFoto; fotoEl.classList.remove('hidden'); }
-  else { fotoEl.classList.add('hidden'); }
+  if (fotos.length > 0){
+    fotoEl.src = fotos[0].foto;
+    fotoEl.classList.remove('hidden');
+  } else {
+    fotoEl.classList.add('hidden');
+  }
 
   var itensHtml = '<div class="section-label" style="margin-top:6px;">Itens</div>';
   (rec.itens || []).forEach(function(it, i){
@@ -1402,7 +1476,35 @@ function openDetalheModal(key, forcedStage){
         '<b>' + (it.foto ? '📷' : '—') + '</b>' +
       '</div>';
   });
-  document.getElementById('detalheItens').innerHTML = itensHtml;
+
+  // Galeria clicável com todas as fotos
+  if (fotos.length > 0){
+    itensHtml += '<div class="section-label" style="margin-top:10px;">📷 Fotos (' + fotos.length + ')</div>';
+    itensHtml += '<div class="photo-gallery" id="detalheGaleria">';
+    (rec.itens || []).forEach(function(it, i){
+      if (!it || !it.foto) return;
+      var tagShort = it.tipo === 'abertura' ? 'ABERTURA' : 'FECHAR';
+      itensHtml +=
+        '<div class="photo-thumb" data-detalhe-idx="' + i + '">' +
+          '<img src="' + it.foto + '" alt="Foto ' + (i+1) + '">' +
+          '<span class="ph-num">' + (i+1) + '</span>' +
+          '<span class="ph-tag">' + tagShort + (it.nome ? ' · ' + escapeHtml(it.nome) : '') + '</span>' +
+        '</div>';
+    });
+    itensHtml += '</div>';
+  }
+
+  detalheItensEl.innerHTML = itensHtml;
+
+  // Clique nas miniaturas do modal de detalhes abre o lightbox com a foto ampliada
+  var galeria = detalheItensEl.querySelectorAll('.photo-thumb');
+  galeria.forEach(function(node){
+    node.addEventListener('click', function(){
+      var photoIdx = parseInt(node.getAttribute('data-detalhe-idx'), 10);
+      if (isNaN(photoIdx) || !rec.itens) return;
+      openLightbox(photoIdx, rec.itens);
+    });
+  });
 
   var actionsHtml = '';
   if (stage === 'balanca'){
