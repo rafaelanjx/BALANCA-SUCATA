@@ -151,6 +151,12 @@ main{flex:1;padding:6px 14px 100px;}
 .section-label{
   font-size:11px;letter-spacing:1.6px;color:var(--steel);font-weight:700;
   margin:22px 2px 10px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.section-label .badge{
+  background:var(--bg-elevated);color:var(--accent-2);
+  border:1px solid var(--border);border-radius:20px;
+  padding:2px 8px;font-size:10px;letter-spacing:.5px;
 }
 .empty-note{
   color:var(--text-muted);font-size:13px;text-align:center;padding:26px 10px;
@@ -169,6 +175,10 @@ main{flex:1;padding:6px 14px 100px;}
 }
 .hist-tag.sim{background:rgba(52,211,153,.15);color:var(--good);}
 .hist-tag.nao{background:rgba(138,160,194,.15);color:var(--steel);}
+.hist-tag.pix{background:rgba(251,191,36,.15);color:var(--warn);}
+.hist-tag.dinheiro{background:rgba(52,211,153,.15);color:var(--good);}
+.hist-tag.finalizada{background:rgba(52,211,153,.20);color:var(--good);}
+.hist-tag.paga{background:rgba(47,125,255,.20);color:var(--accent-2);}
 .hist-meta{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-top:4px;}
 .hist-toggle{
   font-size:12px;color:var(--accent-2);margin-top:8px;cursor:pointer;font-weight:600;
@@ -176,6 +186,13 @@ main{flex:1;padding:6px 14px 100px;}
 .hist-lines{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);}
 .hist-line{font-family:var(--font-mono);font-size:12.5px;color:var(--text);padding:3px 0;display:flex;justify-content:space-between;gap:8px;}
 .hist-line b{color:var(--accent-2);}
+.hist-photo-thumb{
+  margin-top:8px;width:80px;height:80px;object-fit:cover;border-radius:8px;
+  border:1px solid var(--border);display:block;
+}
+.hist-photo-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.hist-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.hist-actions .btn{padding:9px 10px;font-size:12px;flex:1;min-width:120px;}
 
 /* ---------- weighing view ---------- */
 .balloon{
@@ -233,6 +250,22 @@ main{flex:1;padding:6px 14px 100px;}
 .field.error input{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-glow);}
 .field-error-msg{color:var(--bad);font-size:12px;margin-top:6px;font-weight:600;}
 
+/* photo capture area */
+.photo-area{
+  background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px;text-align:center;
+}
+.photo-area .ph-lbl{font-size:11.5px;color:var(--steel);font-weight:700;letter-spacing:.4px;margin-bottom:8px;display:block;}
+.photo-preview{
+  width:100%;max-width:280px;height:auto;aspect-ratio:1/1;object-fit:cover;
+  border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-base);
+  display:none;margin:0 auto 10px;
+}
+.photo-preview.show{display:block;}
+.photo-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.photo-actions .btn{padding:11px 14px;font-size:13.5px;flex:1;min-width:120px;}
+.photo-hint{font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.4;}
+
 .add-form{
   background:var(--bg-panel-2);border:1px solid var(--border);border-radius:var(--radius);
   padding:14px;margin-bottom:14px;
@@ -250,14 +283,53 @@ main{flex:1;padding:6px 14px 100px;}
 .overlay.show{opacity:1;pointer-events:auto;}
 
 .sidebar{
-  position:fixed;top:0;left:0;bottom:0;width:82%;max-width:320px;z-index:50;
+  position:fixed;top:0;left:0;bottom:0;width:86%;max-width:340px;z-index:50;
   background:var(--bg-panel);border-right:1px solid var(--border);
   transform:translateX(-105%);transition:transform .25s cubic-bezier(.4,0,.2,1);
   display:flex;flex-direction:column;padding:16px;
+  overflow-y:auto;
 }
 .sidebar.open{transform:translateX(0);}
-.sidebar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.sidebar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;position:sticky;top:0;background:var(--bg-panel);padding-bottom:10px;z-index:2;}
 .sidebar-title{font-size:14px;font-weight:800;letter-spacing:.6px;}
+
+.side-section{margin-bottom:14px;}
+.side-section-title{
+  font-size:10.5px;letter-spacing:1.5px;color:var(--steel);font-weight:800;
+  margin-bottom:8px;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;
+}
+.side-section-title .count{
+  background:var(--bg-elevated);color:var(--accent-2);
+  padding:1px 7px;border-radius:10px;font-size:9.5px;letter-spacing:.3px;
+}
+
+.stage-link{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg-panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:11px 12px;margin-bottom:7px;cursor:pointer;
+  transition:background .15s ease, border-color .15s ease, transform .1s ease;
+}
+.stage-link:active{transform:scale(.99);}
+.stage-link:hover{background:var(--bg-elevated);}
+.stage-link .stage-ico{
+  width:34px;height:34px;border-radius:9px;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  background:rgba(47,125,255,.12);color:var(--accent-2);
+}
+.stage-link.balanca .stage-ico{background:rgba(47,125,255,.12);color:var(--accent-2);}
+.stage-link.admin .stage-ico{background:rgba(251,191,36,.12);color:var(--warn);}
+.stage-link.financeiro .stage-ico{background:rgba(248,113,113,.12);color:var(--bad);}
+.stage-link.finalizadas .stage-ico{background:rgba(52,211,153,.15);color:var(--good);}
+.stage-link .stage-info{flex:1;min-width:0;}
+.stage-link .stage-name{font-weight:700;font-size:13.5px;}
+.stage-link .stage-sub{font-size:10.5px;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px;}
+.stage-link .stage-pill{
+  background:var(--bg-elevated);color:var(--accent-2);
+  border:1px solid var(--border);border-radius:20px;
+  padding:2px 8px;font-size:10px;font-weight:800;letter-spacing:.4px;
+}
+
 .link-item{
   display:flex;align-items:center;gap:10px;
   background:var(--bg-panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);
@@ -285,7 +357,7 @@ main{flex:1;padding:6px 14px 100px;}
   border-radius:20px 20px 0 0;
   padding:20px 18px 26px;
   transform:translateY(30px);transition:transform .25s cubic-bezier(.4,0,.2,1);
-  max-height:88vh;overflow-y:auto;
+  max-height:88vh;overflow-y:auto;position:relative;
 }
 .modal-overlay.show .modal-box{transform:translateY(0);}
 .modal-title{font-size:17px;font-weight:800;margin:0 0 4px;}
@@ -334,9 +406,29 @@ main{flex:1;padding:6px 14px 100px;}
 
 .small-note{font-size:11.5px;color:var(--text-muted);line-height:1.5;margin-top:4px;}
 code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-family:var(--font-mono);font-size:11px;}
+
+/* photo detail in modal */
+.photo-detail{
+  width:100%;max-height:280px;object-fit:contain;
+  background:var(--bg-base);border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  margin-bottom:12px;
+}
+
+/* badge status card for "Finalizadas e Pagas" */
+.final-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(52,211,153,.15);color:var(--good);
+  border:1px solid rgba(52,211,153,.4);
+  padding:4px 10px;border-radius:20px;
+  font-size:11px;font-weight:800;letter-spacing:.6px;
+}
 </style>
 </head>
 <body>
+
+<!-- Som de notificação (gerado em runtime via WebAudio, sem arquivos externos) -->
+<audio id="notifSound" preload="auto"></audio>
 
 <div id="appRoot">
 
@@ -360,11 +452,11 @@ code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-
       <div class="hero-card">
         <div class="hero-icon">🚛⚖️</div>
         <div class="hero-title">NOVA PESAGEM</div>
-        <p class="hero-desc">Registre a abertura e o fechamento de cada material descarregado.</p>
+        <p class="hero-desc">Tire uma foto do painel da balança para registrar o peso de cada material descarregado.</p>
         <button class="btn btn-primary" id="btnNovaPesagem"><span class="ico">＋</span> Iniciar pesagem</button>
       </div>
 
-      <div class="section-label">Histórico de pesagens</div>
+      <div class="section-label">Histórico de pesagens <span class="badge" id="homeCount">0</span></div>
       <div id="historyList"><div class="empty-note">Nenhuma pesagem registrada ainda.</div></div>
     </section>
 
@@ -395,10 +487,21 @@ code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-
           <input type="text" id="inpMaterial" placeholder="Ex: Lata, Miúda, Ferro..." autocomplete="off">
         </div>
 
+        <!-- FOTO (substitui o campo de digitar peso) -->
         <div class="field" id="fieldPeso">
-          <label id="lblPeso">Peso (kg)</label>
-          <input type="text" id="inpPeso" inputmode="decimal" placeholder="Ex: 550">
-          <div class="field-error-msg hidden" id="pesoErrorMsg"></div>
+          <label id="lblPeso">Foto do peso de abertura (kg)</label>
+          <div class="photo-area">
+            <span class="ph-lbl" id="phLbl">📷 Tire ou anexe uma foto do painel da balança</span>
+            <img class="photo-preview" id="wPhotoPreview" alt="Foto do peso">
+            <div class="photo-actions">
+              <button type="button" class="btn btn-secondary" id="btnPhotoCamera">📷 Tirar foto</button>
+              <button type="button" class="btn btn-secondary" id="btnPhotoAttach">📎 Anexar</button>
+              <button type="button" class="btn btn-secondary hidden" id="btnPhotoRetake">↺ Refazer</button>
+            </div>
+            <input type="file" id="wPhotoFile" accept="image/*" capture="environment" class="hidden">
+            <p class="photo-hint">A foto do painel deve mostrar o valor do peso em kg. Ela ficará visível no histórico.</p>
+            <div class="field-error-msg hidden" id="pesoErrorMsg"></div>
+          </div>
         </div>
 
         <button class="btn btn-primary" id="btnAddItem" style="width:100%;">Registrar</button>
@@ -414,25 +517,57 @@ code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-
   </main>
 </div>
 
-<!-- SIDEBAR -->
+<!-- SIDEBAR (com etapas: Finalizar Balança / Finalizar Administrativo / Finalizar Financeiro / Finalizadas e Pagas) -->
 <div class="overlay" id="sidebarOverlay"></div>
 <div class="sidebar" id="sidebar">
   <div class="sidebar-head">
-    <div class="sidebar-title">🔗 LINKS EXTERNOS</div>
+    <div class="sidebar-title">📋 ETAPAS DO FLUXO</div>
     <button class="icon-btn" id="btnSidebarClose">✕</button>
   </div>
-  <div id="linksList"></div>
-  <div class="sidebar-add">
-    <div class="field">
-      <label>Nome do link</label>
-      <input type="text" id="inpLinkNome" placeholder="Ex: Cotação de metais">
+
+  <div class="side-section">
+    <div class="side-section-title">⚖️ Finalizar Balança <span class="count" id="cntBalanca">0</span></div>
+    <div id="stageBalancaList">
+      <div class="empty-note" style="padding:14px 10px;font-size:12px;">Nenhuma pesagem aguardando.</div>
     </div>
-    <div class="field">
-      <label>URL</label>
-      <input type="text" id="inpLinkUrl" placeholder="https://...">
-      <div class="field-error-msg hidden" id="linkErrorMsg"></div>
+  </div>
+
+  <div class="side-section">
+    <div class="side-section-title">🏢 Finalizar Administrativo <span class="count" id="cntAdmin">0</span></div>
+    <div id="stageAdminList">
+      <div class="empty-note" style="padding:14px 10px;font-size:12px;">Aguardando pesagens...</div>
     </div>
-    <button class="btn btn-primary" id="btnAddLink" style="width:100%;">＋ Adicionar link</button>
+  </div>
+
+  <div class="side-section">
+    <div class="side-section-title">💰 Finalizar Financeiro <span class="count" id="cntFin">0</span></div>
+    <div id="stageFinList">
+      <div class="empty-note" style="padding:14px 10px;font-size:12px;">Aguardando pagamentos via PIX.</div>
+    </div>
+  </div>
+
+  <div class="side-section">
+    <div class="side-section-title">✅ Finalizadas e Pagas <span class="count" id="cntFinalizadas">0</span></div>
+    <div id="stageFinalizadasList">
+      <div class="empty-note" style="padding:14px 10px;font-size:12px;">Nenhuma pesagem finalizada.</div>
+    </div>
+  </div>
+
+  <div class="side-section">
+    <div class="side-section-title">🔗 Links Externos</div>
+    <div id="linksList"></div>
+    <div style="margin-top:8px;">
+      <div class="field">
+        <label>Nome do link</label>
+        <input type="text" id="inpLinkNome" placeholder="Ex: Cotação de metais">
+      </div>
+      <div class="field">
+        <label>URL</label>
+        <input type="text" id="inpLinkUrl" placeholder="https://...">
+        <div class="field-error-msg hidden" id="linkErrorMsg"></div>
+      </div>
+      <button class="btn btn-primary" id="btnAddLink" style="width:100%;">＋ Adicionar link</button>
+    </div>
   </div>
 </div>
 
@@ -489,6 +624,50 @@ code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-
   </div>
 </div>
 
+<!-- MODAL: ADMINISTRATIVO (escolha Dinheiro / PIX) -->
+<div class="modal-overlay" id="modalAdmin">
+  <div class="modal-box">
+    <div class="modal-title">🏢 Finalizar Administrativo</div>
+    <p class="modal-desc" id="adminResumo">—</p>
+    <div class="field">
+      <label>Como foi pago?</label>
+      <div class="choice-row">
+        <button class="choice-btn yes" id="btnAdminDinheiro">💵 DINHEIRO</button>
+        <button class="choice-btn no" id="btnAdminPix">⚡ PIX</button>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:14px;" id="btnAdminCancelar">Voltar</button>
+  </div>
+</div>
+
+<!-- MODAL: FINANCEIRO (confirmar pagamento PIX) -->
+<div class="modal-overlay" id="modalFin">
+  <div class="modal-box">
+    <div class="modal-title">💰 Finalizar Financeiro</div>
+    <p class="modal-desc" id="finResumo">—</p>
+    <div class="field">
+      <label>Valor recebido (R$)</label>
+      <input type="text" id="inpFinValor" inputmode="decimal" placeholder="Ex: 150,00">
+    </div>
+    <div class="btn-block-row" style="margin-top:8px;">
+      <button class="btn btn-secondary" id="btnFinCancelar">Voltar</button>
+      <button class="btn btn-good" id="btnFinConfirmar">Confirmar pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETALHES DA PESAGEM (foto + ações) -->
+<div class="modal-overlay" id="modalDetalhe">
+  <div class="modal-box">
+    <button class="icon-btn modal-close-x" id="btnDetalheClose" style="width:36px;height:36px;font-size:18px;">✕</button>
+    <div class="modal-title" id="detalheTitulo">—</div>
+    <p class="modal-desc" id="detalheSub">—</p>
+    <img class="photo-detail hidden" id="detalheFoto" alt="Foto do peso">
+    <div id="detalheItens"></div>
+    <div class="btn-block-row" style="margin-top:14px;" id="detalheActions"></div>
+  </div>
+</div>
+
 <!-- MODAL: SETTINGS -->
 <div class="modal-overlay" id="modalSettings">
   <div class="modal-box">
@@ -542,7 +721,6 @@ function escapeHtml(str){
 function parsePeso(raw){
   if (raw == null) return NaN;
   var s = String(raw).trim().replace(/\./g,"").replace(",", ".");
-  // if user typed "550.5" (dot as decimal, no thousands), handle separately
   if (/^\d+\.\d+$/.test(String(raw).trim())) s = String(raw).trim();
   var n = parseFloat(s);
   return n;
@@ -577,7 +755,46 @@ function toast(msg, type){
 }
 
 /* ========================================================================
-   PERSISTÊNCIA LOCAL (settings, links, fila local)
+   SOM DE NOTIFICAÇÃO (WebAudio) - toca em TODOS os computadores
+======================================================================== */
+var notifAudioCtx = null;
+function getAudioCtx(){
+  if (!notifAudioCtx){
+    try{ notifAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e){ notifAudioCtx = null; }
+  }
+  if (notifAudioCtx && notifAudioCtx.state === 'suspended'){
+    try{ notifAudioCtx.resume(); }catch(e){}
+  }
+  return notifAudioCtx;
+}
+function beep(freq, dur, type, gain){
+  type = type || 'sine'; gain = gain == null ? 0.18 : gain;
+  var ctx = getAudioCtx();
+  if (!ctx) return;
+  var osc = ctx.createOscillator();
+  var g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  g.gain.value = 0;
+  osc.connect(g); g.connect(ctx.destination);
+  var t = ctx.currentTime;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(gain, t + 0.01);
+  g.gain.linearRampToValueAtTime(gain, t + dur - 0.05);
+  g.gain.linearRampToValueAtTime(0, t + dur);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+function playNotifSound(){
+  // sino de notificação em 3 tons (quem ouvir o som sabe que há uma pesagem nova)
+  beep(880, 0.18, 'sine', 0.22);
+  setTimeout(function(){ beep(1175, 0.18, 'sine', 0.22); }, 180);
+  setTimeout(function(){ beep(1568, 0.32, 'sine', 0.22); }, 360);
+}
+
+/* ========================================================================
+   PERSISTÊNCIA LOCAL
 ======================================================================== */
 var LS_CONFIG = 'ja_config_v1';
 var LS_LINKS = 'ja_links_v1';
@@ -600,19 +817,47 @@ var config = loadJSON(LS_CONFIG, { dbUrl: null, testMode: false, deviceName: "" 
 var links = loadJSON(LS_LINKS, []);
 
 /* ========================================================================
-   FIREBASE (Realtime Database via REST + SSE — somente a URL é necessária)
+   FOTO -> DATA URL (com compressão leve p/ caber no Firebase)
+======================================================================== */
+function fileToDataURL(file, maxW, quality, cb){
+  maxW = maxW || 900; quality = quality == null ? 0.78 : quality;
+  var fr = new FileReader();
+  fr.onload = function(e){
+    var dataUrl = e.target.result;
+    var img = new Image();
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      if (w > maxW){
+        var nh = Math.round(h * (maxW / w));
+        var canvas = document.createElement('canvas');
+        canvas.width = maxW; canvas.height = nh;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, maxW, nh);
+        try{ cb(canvas.toDataURL('image/jpeg', quality)); return; }catch(err){ cb(dataUrl); return; }
+      }
+      cb(dataUrl);
+    };
+    img.onerror = function(){ cb(dataUrl); };
+    img.src = dataUrl;
+  };
+  fr.onerror = function(){ cb(null); };
+  fr.readAsDataURL(file);
+}
+
+/* ========================================================================
+   FIREBASE (Realtime Database via REST + SSE)
 ======================================================================== */
 var firebaseReady = false;
 var firebaseError = "";
-var esHistory = null;      // EventSource (stream em tempo real)
-var historyMap = {};       // key (push id) -> registro
-var historyRecords = [];   // array ordenado (mais recente primeiro) para renderização
+var esHistory = null;
+var historyMap = {};
+var historyRecords = [];
+var seenKeys = {};     // ids já vistos — para tocar som 1x
 var reconnectTimer = null;
 
 function collectionName(){
   return config.testMode ? 'pesagens_teste' : 'pesagens';
 }
-
 function baseUrl(){
   if (!config.dbUrl) return null;
   return String(config.dbUrl).trim().replace(/\/+$/,'');
@@ -628,6 +873,7 @@ function initFirebase(){
   teardownConnection();
   firebaseError = "";
   historyMap = {};
+  seenKeys = {};
   var b = baseUrl();
   if (!b){
     renderStatusBar();
@@ -642,10 +888,8 @@ function subscribeHistory(){
   var b = baseUrl();
   if (!b || typeof EventSource === 'undefined') return;
   var url = b + '/' + collectionName() + '.json';
-
-  try{
-    esHistory = new EventSource(url);
-  }catch(e){
+  try{ esHistory = new EventSource(url); }
+  catch(e){
     firebaseReady = false;
     firebaseError = "URL inválida";
     renderStatusBar();
@@ -656,31 +900,30 @@ function subscribeHistory(){
   esHistory.addEventListener('put', function(e){
     try{
       var payload = JSON.parse(e.data);
+      var isFirst = (Object.keys(historyMap).length === 0);
       applyStreamEvent(payload.path, payload.data, true);
       firebaseReady = true;
       firebaseError = "";
       renderStatusBar();
-    }catch(err){ /* ignora eventos malformados */ }
+      // se NÃO é o primeiro load, toca o som de notificação
+      if (!isFirst) maybePlayNewRecordSound();
+    }catch(err){}
   });
-
   esHistory.addEventListener('patch', function(e){
     try{
       var payload = JSON.parse(e.data);
       applyStreamEvent(payload.path, payload.data, false);
-    }catch(err){ /* ignora eventos malformados */ }
+    }catch(err){}
   });
-
   esHistory.addEventListener('auth_revoked', function(){
     firebaseReady = false;
     firebaseError = "Acesso negado (verifique as regras do banco)";
     renderStatusBar();
   });
-
   esHistory.onerror = function(){
     firebaseReady = false;
     firebaseError = "Sem conexão em tempo real";
     renderStatusBar();
-    // EventSource tenta reconectar sozinho; mantemos o histórico local como apoio.
     renderHistoryFromLocal();
   };
 }
@@ -705,7 +948,6 @@ function applyStreamEvent(path, data, isPut){
       if (data === null) delete historyMap[key];
       else historyMap[key] = data;
     } else {
-      // atualização em um campo específico do registro (patch aninhado)
       if (!historyMap[key] || typeof historyMap[key] !== 'object') historyMap[key] = {};
       var sub = parts[1];
       if (data === null) delete historyMap[key][sub];
@@ -718,20 +960,65 @@ function applyStreamEvent(path, data, isPut){
 function rebuildHistoryFromMap(){
   var arr = Object.keys(historyMap).map(function(k){ return historyMap[k]; }).filter(function(r){ return r && typeof r === 'object'; });
   arr.sort(function(a,b){ return (b.criadoEmTS || 0) - (a.criadoEmTS || 0); });
-  historyRecords = arr.slice(0, 50);
+  historyRecords = arr.slice(0, 100);
   renderHistory();
+  renderStages();
+  maybePlayNewRecordSound();
+}
+
+function maybePlayNewRecordSound(){
+  // toca som para qualquer registro NOVO que chegou pelo stream
+  Object.keys(historyMap).forEach(function(k){
+    if (!seenKeys[k]){
+      seenKeys[k] = true;
+      var rec = historyMap[k];
+      // só toca para pesagens que acabaram de ser FINALIZADAS (stage = balanca ou admin)
+      if (rec && (rec.stage === 'balanca' || !rec.stage)){
+        // respeita o filtro de "outros computadores" — só toca em outros devices
+        if (rec.dispositivo !== (config.deviceName || 'não identificado')){
+          playNotifSound();
+        }
+      }
+    }
+  });
 }
 
 function saveToLocalQueue(record){
   var local = loadJSON(LS_LOCAL_RECORDS, []);
   local.unshift(record);
-  saveJSON(LS_LOCAL_RECORDS, local.slice(0, 50));
+  saveJSON(LS_LOCAL_RECORDS, local.slice(0, 100));
+}
+
+function updateRecordField(key, patch, onDone){
+  var b = baseUrl();
+  if (b){
+    var url = b + '/' + collectionName() + '/' + key + '.json';
+    fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch)
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(){
+      if (onDone) onDone(true);
+    }).catch(function(err){
+      toast('Falha ao atualizar (verifique conexão).', 'err');
+      if (onDone) onDone(false);
+    });
+  } else {
+    // local-only: aplica no historyMap e re-renderiza
+    if (historyMap[key]){
+      Object.keys(patch).forEach(function(p){ historyMap[key][p] = patch[p]; });
+    }
+    rebuildHistoryFromMap();
+    if (onDone) onDone(true);
+  }
 }
 
 function saveRecord(record, onDone){
   var recordWithTs = Object.assign({}, record, { criadoEmTS: Date.now() });
   var b = baseUrl();
-
   if (b){
     var url = b + '/' + collectionName() + '.json';
     fetch(url, {
@@ -759,10 +1046,11 @@ function saveRecord(record, onDone){
 }
 
 function renderHistoryFromLocal(){
-  if (baseUrl()) return; // se há URL configurada, o histórico vem do stream em tempo real
+  if (baseUrl()) return;
   var local = loadJSON(LS_LOCAL_RECORDS, []);
   historyRecords = local;
   renderHistory();
+  renderStages();
 }
 
 /* ========================================================================
@@ -774,19 +1062,29 @@ var state = {
   view: 'home',
   cadastro: null,
   clienteNome: '',
-  itens: [] // {tipo:'abertura'|'material', nome, peso, horaLabel}
+  itens: [],          // {tipo, nome, foto, horaLabel}
+  pendingPhoto: null  // dataURL da foto atual do input
 };
-
-function pesoAnterior(){
-  if (state.itens.length === 0) return Infinity;
-  return state.itens[state.itens.length - 1].peso;
-}
 
 function resetWeighing(){
   state.view = 'home';
   state.cadastro = null;
   state.clienteNome = '';
   state.itens = [];
+  state.pendingPhoto = null;
+  clearPhotoInput();
+}
+
+function clearPhotoInput(){
+  var img = document.getElementById('wPhotoPreview');
+  img.src = '';
+  img.classList.remove('show');
+  document.getElementById('btnPhotoRetake').classList.add('hidden');
+  document.getElementById('btnPhotoCamera').classList.remove('hidden');
+  document.getElementById('btnPhotoAttach').classList.remove('hidden');
+  var fileEl = document.getElementById('wPhotoFile');
+  if (fileEl) fileEl.value = '';
+  state.pendingPhoto = null;
 }
 
 /* ========================================================================
@@ -795,7 +1093,7 @@ function resetWeighing(){
 function openModal(id){ document.getElementById(id).classList.add('show'); }
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 function closeAllModals(){
-  ['modalCadastro','modalNome','modalFinalizar','modalCancelar','modalSettings'].forEach(closeModal);
+  ['modalCadastro','modalNome','modalFinalizar','modalCancelar','modalSettings','modalAdmin','modalFin','modalDetalhe'].forEach(closeModal);
 }
 
 /* ========================================================================
@@ -821,47 +1119,297 @@ function renderStatusBar(){
 }
 
 /* ========================================================================
+   STAGE HELPERS (qual a etapa de cada pesagem)
+======================================================================== */
+function getStage(rec){
+  // stage: 'balanca' | 'admin' | 'financeiro' | 'finalizada'
+  if (!rec) return 'balanca';
+  if (rec.stage) return rec.stage;
+  if (rec.pago) return 'finalizada';
+  if (rec.formaPagamento === 'dinheiro') return 'finalizada';
+  if (rec.formaPagamento === 'pix') return 'financeiro';
+  return 'admin'; // após finalizar na balança, vai para admin
+}
+
+function getStageLabel(s){
+  if (s === 'balanca') return 'Aguardando envio';
+  if (s === 'admin') return 'Finalizar Administrativo';
+  if (s === 'financeiro') return 'Finalizar Financeiro';
+  if (s === 'finalizada') return 'Finalizada e Paga';
+  return s;
+}
+
+/* ========================================================================
    RENDER: HOME / HISTÓRICO
 ======================================================================== */
+function buildHistCardHtml(rec, idx){
+  var cadastroTagClass = rec.cadastro ? 'sim' : 'nao';
+  var cadastroTagText = rec.cadastro ? 'CADASTRO' : 'SEM CADASTRO';
+  var dataStr = rec.criadoEmLabel ? escapeHtml(rec.criadoEmLabel) : '';
+  var device = rec.dispositivo ? escapeHtml(rec.dispositivo) : 'desconhecido';
+  var stage = getStage(rec);
+  var stageBadge = '';
+  if (stage === 'admin')        stageBadge = '<span class="hist-tag pix" style="margin-left:6px;">ADMIN</span>';
+  if (stage === 'financeiro')   stageBadge = '<span class="hist-tag pix" style="margin-left:6px;">PIX</span>';
+  if (stage === 'finalizada')   stageBadge = '<span class="hist-tag finalizada" style="margin-left:6px;">PAGA</span>';
+
+  var itensHtml = '';
+  (rec.itens || []).forEach(function(it){
+    var label = it.tipo === 'abertura' ? 'Abertura' : ('Fechar ' + escapeHtml(it.nome || ''));
+    itensHtml += '<div class="hist-line"><span>' + label + '</span><b>' + (it.foto ? '📷 foto' : '—') + '</b></div>';
+  });
+  var firstFoto = (rec.itens && rec.itens[0] && rec.itens[0].foto) ? rec.itens[0].foto : null;
+  var photoHtml = '';
+  if (firstFoto){
+    photoHtml = '<div class="hist-photo-row"><img class="hist-photo-thumb" src="' + firstFoto + '" alt="Foto da pesagem"></div>';
+  }
+  return ''+
+    '<div class="hist-card">' +
+      '<div class="hist-top">' +
+        '<div class="hist-name">' + escapeHtml(rec.cliente || 'Sem nome') + stageBadge + '</div>' +
+        '<span class="hist-tag ' + cadastroTagClass + '">' + cadastroTagText + '</span>' +
+      '</div>' +
+      '<div class="hist-meta">' + dataStr + ' · ' + device + '</div>' +
+      photoHtml +
+      '<div class="hist-toggle" data-toggle="' + idx + '">Ver materiais ▾</div>' +
+      '<div class="hist-lines hidden" data-lines="' + idx + '">' + itensHtml + '</div>' +
+    '</div>';
+}
+
 function renderHistory(){
   var wrap = document.getElementById('historyList');
+  document.getElementById('homeCount').textContent = historyRecords.length;
   if (!historyRecords || historyRecords.length === 0){
     wrap.innerHTML = '<div class="empty-note">Nenhuma pesagem registrada ainda.</div>';
     return;
   }
   var html = '';
   historyRecords.forEach(function(rec, idx){
-    var cadastroTagClass = rec.cadastro ? 'sim' : 'nao';
-    var cadastroTagText = rec.cadastro ? 'CADASTRO' : 'SEM CADASTRO';
-    var dataStr = rec.criadoEmLabel ? escapeHtml(rec.criadoEmLabel) : '';
-    var device = rec.dispositivo ? escapeHtml(rec.dispositivo) : 'desconhecido';
-    var itensHtml = '';
-    (rec.itens || []).forEach(function(it){
-      var label = it.tipo === 'abertura' ? 'Abrir' : ('Fechar peso ' + escapeHtml(it.nome || ''));
-      itensHtml += '<div class="hist-line"><span>' + label + ' <span style="color:var(--text-muted)">(abaixo)</span></span><b>' + fmtKg(it.peso) + '</b></div>';
-    });
-    html +=
-      '<div class="hist-card">' +
-        '<div class="hist-top">' +
-          '<div class="hist-name">' + escapeHtml(rec.cliente || 'Sem nome') + '</div>' +
-          '<span class="hist-tag ' + cadastroTagClass + '">' + cadastroTagText + '</span>' +
-        '</div>' +
-        '<div class="hist-meta">' + dataStr + ' · ' + device + '</div>' +
-        '<div class="hist-toggle" data-idx="' + idx + '">Ver materiais ▾</div>' +
-        '<div class="hist-lines hidden" data-lines="' + idx + '">' + itensHtml + '</div>' +
-      '</div>';
+    html += buildHistCardHtml(rec, idx);
   });
   wrap.innerHTML = html;
 
   wrap.querySelectorAll('.hist-toggle').forEach(function(t){
     t.addEventListener('click', function(){
-      var i = t.getAttribute('data-idx');
+      var i = t.getAttribute('data-toggle');
       var linesEl = wrap.querySelector('[data-lines="'+i+'"]');
       var isHidden = linesEl.classList.contains('hidden');
       linesEl.classList.toggle('hidden');
       t.textContent = isHidden ? 'Ocultar materiais ▴' : 'Ver materiais ▾';
     });
   });
+}
+
+/* ========================================================================
+   RENDER: SIDEBAR STAGES
+======================================================================== */
+function renderStages(){
+  // groups
+  var groups = { balanca: [], admin: [], financeiro: [], finalizadas: [] };
+  historyRecords.forEach(function(rec){
+    var s = getStage(rec);
+    if (groups[s]) groups[s].push(rec);
+  });
+
+  document.getElementById('cntBalanca').textContent     = groups.balanca.length;
+  document.getElementById('cntAdmin').textContent       = groups.admin.length;
+  document.getElementById('cntFin').textContent         = groups.financeiro.length;
+  document.getElementById('cntFinalizadas').textContent = groups.finalizadas.length;
+
+  renderStageList('stageBalancaList',     groups.balanca,     'balanca');
+  renderStageList('stageAdminList',       groups.admin,       'admin');
+  renderStageList('stageFinList',         groups.financeiro,  'financeiro');
+  renderStageList('stageFinalizadasList', groups.finalizadas, 'finalizada');
+}
+
+function renderStageList(elId, list, stageName){
+  var el = document.getElementById(elId);
+  if (!list.length){
+    var msg = 'Nenhuma pesagem.';
+    if (stageName === 'admin') msg = 'Aguardando pesagens...';
+    if (stageName === 'financeiro') msg = 'Aguardando pagamentos via PIX.';
+    if (stageName === 'finalizada') msg = 'Nenhuma pesagem finalizada.';
+    el.innerHTML = '<div class="empty-note" style="padding:14px 10px;font-size:12px;">' + msg + '</div>';
+    return;
+  }
+  var html = '';
+  list.forEach(function(rec){
+    var key = rec._key || '';
+    var total = (rec.itens || []).length;
+    html += ''+
+      '<div class="stage-link ' + stageName + '" data-stage-key="' + escapeHtml(key) + '">' +
+        '<div class="stage-ico">' +
+          (stageName === 'balanca' ? '⚖' :
+           stageName === 'admin' ? '🏢' :
+           stageName === 'financeiro' ? '💰' : '✅') +
+        '</div>' +
+        '<div class="stage-info">' +
+          '<div class="stage-name">' + escapeHtml(rec.cliente || 'Sem nome') + '</div>' +
+          '<div class="stage-sub">' + escapeHtml((rec.criadoEmLabel || '—')) + ' · ' + total + ' itens</div>' +
+        '</div>' +
+        '<div class="stage-pill">VER</div>' +
+      '</div>';
+  });
+  el.innerHTML = html;
+
+  el.querySelectorAll('.stage-link').forEach(function(node){
+    node.addEventListener('click', function(){
+      var key = node.getAttribute('data-stage-key');
+      openDetalheModal(key, stageName);
+    });
+  });
+}
+
+/* ========================================================================
+   MODAL DETALHE (foto + ações por etapa)
+======================================================================== */
+function findRecordByKey(key){
+  if (historyMap[key]) { historyMap[key]._key = key; return historyMap[key]; }
+  for (var i=0;i<historyRecords.length;i++){
+    if (historyRecords[i]._key === key || historyRecords[i].firebaseKey === key){
+      historyRecords[i]._key = key;
+      return historyRecords[i];
+    }
+  }
+  return null;
+}
+
+function openDetalheModal(key, forcedStage){
+  var rec = findRecordByKey(key);
+  if (!rec){ toast('Pesagem não encontrada.', 'err'); return; }
+  var stage = forcedStage || getStage(rec);
+  document.getElementById('detalheTitulo').textContent = rec.cliente || 'Sem nome';
+  var sub = [];
+  sub.push('📅 ' + (rec.criadoEmLabel || '—'));
+  sub.push('📍 ' + (rec.dispositivo || 'desconhecido'));
+  if (rec.formaPagamento) sub.push('💳 ' + rec.formaPagamento.toUpperCase());
+  document.getElementById('detalheSub').textContent = sub.join(' · ');
+
+  var fotoEl = document.getElementById('detalheFoto');
+  var firstFoto = (rec.itens && rec.itens[0] && rec.itens[0].foto) ? rec.itens[0].foto : null;
+  if (firstFoto){ fotoEl.src = firstFoto; fotoEl.classList.remove('hidden'); }
+  else { fotoEl.classList.add('hidden'); }
+
+  var itensHtml = '<div class="section-label" style="margin-top:6px;">Itens</div>';
+  (rec.itens || []).forEach(function(it, i){
+    itensHtml += ''+
+      '<div class="hist-line">' +
+        '<span>' + (i+1) + '. ' + (it.tipo === 'abertura' ? 'Abertura' : 'Fechar ' + escapeHtml(it.nome || '')) + '</span>' +
+        '<b>' + (it.foto ? '📷' : '—') + '</b>' +
+      '</div>';
+  });
+  document.getElementById('detalheItens').innerHTML = itensHtml;
+
+  var actionsHtml = '';
+  if (stage === 'balanca'){
+    actionsHtml = '<button class="btn btn-secondary" id="btnDetalheFechar">Fechar</button>' +
+                  '<button class="btn btn-primary" id="btnDetalheEnviar">📤 Enviar p/ Administrativo</button>';
+  } else if (stage === 'admin'){
+    actionsHtml = '<button class="btn btn-secondary" id="btnDetalheFechar">Fechar</button>' +
+                  '<button class="btn btn-primary" id="btnDetalheAdmin">🏢 Finalizar Administrativo</button>';
+  } else if (stage === 'financeiro'){
+    actionsHtml = '<button class="btn btn-secondary" id="btnDetalheFechar">Fechar</button>' +
+                  '<button class="btn btn-good" id="btnDetalheFin">💰 Finalizar Financeiro</button>';
+  } else {
+    actionsHtml = '<button class="btn btn-good" style="grid-column:1 / -1;" id="btnDetalheFechar">Fechar</button>';
+  }
+  document.getElementById('detalheActions').innerHTML = actionsHtml;
+
+  document.getElementById('btnDetalheFechar').addEventListener('click', function(){
+    closeModal('modalDetalhe');
+  });
+  if (stage === 'balanca'){
+    document.getElementById('btnDetalheEnviar').addEventListener('click', function(){
+      // avança para administrativo
+      updateRecordField(key, { stage: 'admin', enviadoAdminEm: Date.now(), enviadoAdminEmLabel: fmtDateTime(new Date()) }, function(ok){
+        if (ok){
+          toast('Enviado para o Administrativo.', 'ok');
+          closeModal('modalDetalhe');
+        }
+      });
+    });
+  }
+  if (stage === 'admin'){
+    document.getElementById('btnDetalheAdmin').addEventListener('click', function(){
+      openAdminModal(key, rec);
+    });
+  }
+  if (stage === 'financeiro'){
+    document.getElementById('btnDetalheFin').addEventListener('click', function(){
+      openFinModal(key, rec);
+    });
+  }
+  openModal('modalDetalhe');
+}
+
+/* ========================================================================
+   MODAL ADMINISTRATIVO (escolha Dinheiro / PIX)
+======================================================================== */
+function openAdminModal(key, rec){
+  document.getElementById('adminResumo').innerHTML =
+    'Cliente: <b>' + escapeHtml(rec.cliente || '—') + '</b><br>' +
+    'Itens: <b>' + (rec.itens ? rec.itens.length : 0) + '</b><br>' +
+    'Dispositivo de origem: <b>' + escapeHtml(rec.dispositivo || '—') + '</b>';
+  openModal('modalAdmin');
+  document.getElementById('btnAdminCancelar').onclick = function(){ closeModal('modalAdmin'); };
+  document.getElementById('btnAdminDinheiro').onclick = function(){
+    closeModal('modalAdmin');
+    // DINHEIRO -> vai direto para Finalizadas e Pagas
+    updateRecordField(key, {
+      stage: 'finalizada',
+      formaPagamento: 'dinheiro',
+      pago: true,
+      pagoEm: Date.now(),
+      pagoEmLabel: fmtDateTime(new Date()),
+      finalizadoPor: config.deviceName || 'não identificado'
+    }, function(ok){
+      if (ok) toast('Pagamento em DINHEIRO confirmado. Pesagem finalizada.', 'ok');
+    });
+  };
+  document.getElementById('btnAdminPix').onclick = function(){
+    closeModal('modalAdmin');
+    // PIX -> vai para o Financeiro
+    updateRecordField(key, {
+      stage: 'financeiro',
+      formaPagamento: 'pix',
+      enviadoFinEm: Date.now(),
+      enviadoFinEmLabel: fmtDateTime(new Date())
+    }, function(ok){
+      if (ok) toast('Encaminhado para o Financeiro (PIX).', 'ok');
+    });
+  };
+}
+
+/* ========================================================================
+   MODAL FINANCEIRO
+======================================================================== */
+function openFinModal(key, rec){
+  document.getElementById('inpFinValor').value = '';
+  document.getElementById('finResumo').innerHTML =
+    'Cliente: <b>' + escapeHtml(rec.cliente || '—') + '</b><br>' +
+    'Forma de pagamento: <b>PIX</b><br>' +
+    'Origem: <b>' + escapeHtml(rec.dispositivo || '—') + '</b>';
+  openModal('modalFin');
+  setTimeout(function(){ document.getElementById('inpFinValor').focus(); }, 260);
+  document.getElementById('btnFinCancelar').onclick = function(){ closeModal('modalFin'); };
+  document.getElementById('btnFinConfirmar').onclick = function(){
+    var val = parsePeso(document.getElementById('inpFinValor').value);
+    if (isNaN(val) || val <= 0){
+      toast('Informe um valor válido.', 'err');
+      return;
+    }
+    closeModal('modalFin');
+    updateRecordField(key, {
+      stage: 'finalizada',
+      pago: true,
+      valorPago: val,
+      pagoEm: Date.now(),
+      pagoEmLabel: fmtDateTime(new Date()),
+      finalizadoPor: config.deviceName || 'não identificado'
+    }, function(ok){
+      if (ok) toast('Pagamento via PIX confirmado. Pesagem finalizada.', 'ok');
+    });
+  };
 }
 
 /* ========================================================================
@@ -877,17 +1425,20 @@ function renderWeighing(){
 
   var listEl = document.getElementById('wItemsList');
   if (state.itens.length === 0){
-    listEl.innerHTML = '<div class="empty-note">Registre o peso de abertura para iniciar.</div>';
+    listEl.innerHTML = '<div class="empty-note">Tire a foto do painel da balança para iniciar.</div>';
   } else {
     var html = '';
-    state.itens.forEach(function(it){
+    state.itens.forEach(function(it, i){
       var label = it.tipo === 'abertura'
-        ? 'Abrir <span class="tag">(abaixo)</span>'
-        : ('Fechar peso ' + escapeHtml(it.nome) + ' <span class="tag">(abaixo)</span>');
+        ? 'Abertura <span class="tag">(foto ' + (i+1) + ')</span>'
+        : ('Fechar ' + escapeHtml(it.nome) + ' <span class="tag">(foto ' + (i+1) + ')</span>');
       html +=
         '<div class="item-line">' +
           '<div class="item-left">' + label + '</div>' +
-          '<div><div class="item-weight">' + fmtKg(it.peso) + '</div><span class="item-time">' + escapeHtml(it.horaLabel) + '</span></div>' +
+          '<div>' +
+            '<div class="item-weight">📷</div>' +
+            '<span class="item-time">' + escapeHtml(it.horaLabel) + '</span>' +
+          '</div>' +
         '</div>';
     });
     listEl.innerHTML = html;
@@ -898,7 +1449,7 @@ function renderWeighing(){
     lastWeightEl.textContent = '—';
     lastWeightEl.classList.add('dim');
   } else {
-    lastWeightEl.textContent = fmtKg(pesoAnterior());
+    lastWeightEl.textContent = '📷 ' + state.itens.length + ' foto(s)';
     lastWeightEl.classList.remove('dim');
   }
 
@@ -909,7 +1460,10 @@ function renderWeighing(){
   var isAbertura = state.itens.length === 0;
   document.getElementById('wAddFormTitle').textContent = isAbertura ? 'Registrar abertura' : 'Fechar peso de material';
   document.getElementById('fieldMaterial').classList.toggle('hidden', isAbertura);
-  document.getElementById('lblPeso').textContent = isAbertura ? 'Peso de abertura (kg)' : 'Peso ao fechar (kg)';
+  document.getElementById('lblPeso').textContent = isAbertura ? 'Foto do peso de abertura' : 'Foto do peso ao fechar';
+  document.getElementById('phLbl').textContent = isAbertura
+    ? '📷 Tire a foto do painel mostrando o peso de abertura'
+    : '📷 Tire a foto do painel mostrando o peso ao fechar';
   document.getElementById('btnAddItem').textContent = isAbertura ? 'Registrar abertura' : 'Fechar peso do material';
 
   document.getElementById('btnUndo').disabled = state.itens.length === 0;
@@ -934,8 +1488,9 @@ function showPesoError(msg){
 ======================================================================== */
 function renderLinks(){
   var wrap = document.getElementById('linksList');
+  if (!wrap) return;
   if (!links.length){
-    wrap.innerHTML = '<div class="empty-note">Nenhum link adicionado.</div>';
+    wrap.innerHTML = '<div class="empty-note" style="padding:14px 10px;font-size:12px;">Nenhum link adicionado.</div>';
     return;
   }
   var html = '';
@@ -977,9 +1532,11 @@ function renderView(){
 }
 
 /* ========================================================================
-   AÇÕES: FLUXO DE PESAGEM
+   EVENTOS: PESAGEM
 ======================================================================== */
 document.getElementById('btnNovaPesagem').addEventListener('click', function(){
+  // habilita o audio (regra do navegador exige interação do usuário)
+  getAudioCtx();
   state.cadastro = null;
   state.clienteNome = '';
   document.getElementById('inpNomeCliente').value = '';
@@ -989,7 +1546,6 @@ document.getElementById('btnNovaPesagem').addEventListener('click', function(){
 document.getElementById('btnCadastroCancelar').addEventListener('click', function(){
   closeModal('modalCadastro');
 });
-
 document.getElementById('btnCadastroSim').addEventListener('click', function(){
   state.cadastro = true;
   closeModal('modalCadastro');
@@ -1006,7 +1562,6 @@ document.getElementById('btnCadastroNao').addEventListener('click', function(){
 document.getElementById('btnNomeCancelar').addEventListener('click', function(){
   closeModal('modalNome');
 });
-
 function confirmNome(){
   var val = document.getElementById('inpNomeCliente').value.trim();
   if (!val){
@@ -1016,11 +1571,11 @@ function confirmNome(){
   }
   document.getElementById('fieldNome').classList.remove('error');
   document.getElementById('nomeErrorMsg').classList.add('hidden');
-
   state.clienteNome = val;
   state.itens = [];
   state.view = 'weighing';
   closeModal('modalNome');
+  clearPhotoInput();
   renderView();
 }
 document.getElementById('btnNomeConfirmar').addEventListener('click', confirmNome);
@@ -1028,29 +1583,51 @@ document.getElementById('inpNomeCliente').addEventListener('keydown', function(e
   if (e.key === 'Enter') confirmNome();
 });
 
+/* FOTO: tirar / anexar / refazer */
+function handlePhotoFile(file){
+  if (!file) return;
+  fileToDataURL(file, 900, 0.78, function(dataUrl){
+    if (!dataUrl){ showPesoError('Não foi possível carregar a foto.'); return; }
+    state.pendingPhoto = dataUrl;
+    var img = document.getElementById('wPhotoPreview');
+    img.src = dataUrl;
+    img.classList.add('show');
+    document.getElementById('btnPhotoRetake').classList.remove('hidden');
+    document.getElementById('btnPhotoCamera').classList.add('hidden');
+    document.getElementById('btnPhotoAttach').classList.add('hidden');
+    clearPesoError();
+  });
+}
+document.getElementById('btnPhotoCamera').addEventListener('click', function(){
+  var fileEl = document.getElementById('wPhotoFile');
+  fileEl.removeAttribute('capture'); // alguns browsers ignoram, mas garante comportamento
+  fileEl.setAttribute('capture', 'environment');
+  fileEl.click();
+});
+document.getElementById('btnPhotoAttach').addEventListener('click', function(){
+  var fileEl = document.getElementById('wPhotoFile');
+  fileEl.removeAttribute('capture');
+  fileEl.click();
+});
+document.getElementById('btnPhotoRetake').addEventListener('click', function(){
+  clearPhotoInput();
+});
+document.getElementById('wPhotoFile').addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0];
+  if (f) handlePhotoFile(f);
+});
+
+/* REGISTRAR ITEM (usa a foto) */
 document.getElementById('btnAddItem').addEventListener('click', function(){
   clearPesoError();
   var isAbertura = state.itens.length === 0;
-  var pesoRaw = document.getElementById('inpPeso').value;
-  var peso = parsePeso(pesoRaw);
 
-  if (isNaN(peso) || peso <= 0){
-    showPesoError('Informe um peso válido, maior que zero.');
-    return;
-  }
-  if (state.itens.length > 0 && peso >= pesoAnterior()){
-    showPesoError('O peso não pode ser maior ou igual ao peso anterior (' + fmtKg(pesoAnterior()) + ').');
-    return;
-  }
-  if (state.itens.length >= MAX_ITENS){
-    toast('Limite de ' + MAX_ITENS + ' itens atingido.', 'err');
+  if (!state.pendingPhoto){
+    showPesoError('Anexe ou tire uma foto do peso antes de registrar.');
     return;
   }
 
-  var item;
-  if (isAbertura){
-    item = { tipo:'abertura', nome:null, peso: peso, horaLabel: nowLabel() };
-  } else {
+  if (!isAbertura){
     var nomeMaterial = document.getElementById('inpMaterial').value.trim();
     if (!nomeMaterial){
       document.getElementById('fieldMaterial').classList.add('error');
@@ -1058,12 +1635,24 @@ document.getElementById('btnAddItem').addEventListener('click', function(){
       return;
     }
     document.getElementById('fieldMaterial').classList.remove('error');
-    item = { tipo:'material', nome: nomeMaterial, peso: peso, horaLabel: nowLabel() };
+  }
+
+  if (state.itens.length >= MAX_ITENS){
+    toast('Limite de ' + MAX_ITENS + ' itens atingido.', 'err');
+    return;
+  }
+
+  var item;
+  if (isAbertura){
+    item = { tipo:'abertura', nome: null, foto: state.pendingPhoto, horaLabel: nowLabel() };
+  } else {
+    item = { tipo:'material', nome: document.getElementById('inpMaterial').value.trim(), foto: state.pendingPhoto, horaLabel: nowLabel() };
   }
 
   state.itens.push(item);
-  document.getElementById('inpPeso').value = '';
+  state.pendingPhoto = null;
   document.getElementById('inpMaterial').value = '';
+  clearPhotoInput();
   renderWeighing();
 });
 
@@ -1095,7 +1684,8 @@ document.getElementById('btnFinalizar').addEventListener('click', function(){
   resumo.innerHTML =
     'Cliente: <b>' + escapeHtml(state.clienteNome) + '</b><br>' +
     'Itens registrados: <b>' + state.itens.length + '</b><br>' +
-    'Este resumo será enviado para todos os dispositivos conectados.';
+    '📷 <b>' + state.itens.length + ' foto(s)</b> anexada(s)<br>' +
+    'Será enviado para o <b>Administrativo</b> de todos os dispositivos conectados.';
   openModal('modalFinalizar');
 });
 document.getElementById('btnFinalizarCancelar').addEventListener('click', function(){
@@ -1110,8 +1700,9 @@ document.getElementById('btnFinalizarConfirmar').addEventListener('click', funct
     cadastro: !!state.cadastro,
     dispositivo: config.deviceName || 'não identificado',
     criadoEmLabel: fmtDateTime(now),
+    stage: 'admin',                       // <- vai direto para o Administrativo
     itens: state.itens.map(function(it){
-      return { tipo: it.tipo, nome: it.nome, peso: it.peso, horaLabel: it.horaLabel };
+      return { tipo: it.tipo, nome: it.nome, foto: it.foto, horaLabel: it.horaLabel };
     })
   };
   saveRecord(record, function(){
@@ -1119,6 +1710,8 @@ document.getElementById('btnFinalizarConfirmar').addEventListener('click', funct
     closeModal('modalFinalizar');
     resetWeighing();
     renderView();
+    // som também toca no próprio dispositivo que finalizou
+    playNotifSound();
   });
 });
 
@@ -1142,22 +1735,18 @@ document.getElementById('btnAddLink').addEventListener('click', function(){
   var url = document.getElementById('inpLinkUrl').value.trim();
   var errEl = document.getElementById('linkErrorMsg');
   errEl.classList.add('hidden');
-
   if (!nome || !url){
     errEl.textContent = 'Informe nome e URL do link.';
     errEl.classList.remove('hidden');
     return;
   }
-  if (!/^https?:\/\//i.test(url)){
-    url = 'https://' + url;
-  }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
   try{ new URL(url); }
   catch(e){
     errEl.textContent = 'URL inválida.';
     errEl.classList.remove('hidden');
     return;
   }
-
   links.push({ id: uid(), nome: nome, url: url });
   saveJSON(LS_LINKS, links);
   document.getElementById('inpLinkNome').value = '';
@@ -1185,7 +1774,6 @@ document.getElementById('btnSettingsSalvar').addEventListener('click', function(
   var testMode = document.getElementById('inpModoTeste').checked;
   var errEl = document.getElementById('configErrorMsg');
   errEl.classList.add('hidden');
-
   var dbUrl = null;
   if (rawUrl){
     if (!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/i.test(rawUrl.replace(/\/+$/,''))){
@@ -1195,12 +1783,10 @@ document.getElementById('btnSettingsSalvar').addEventListener('click', function(
     }
     dbUrl = rawUrl.replace(/\/+$/,'');
   }
-
   config.deviceName = deviceName;
   config.dbUrl = dbUrl;
   config.testMode = testMode;
   saveJSON(LS_CONFIG, config);
-
   closeModal('modalSettings');
   toast('Configurações salvas.', 'ok');
   initFirebase();
@@ -1212,6 +1798,8 @@ document.getElementById('btnSettingsSalvar').addEventListener('click', function(
 renderLinks();
 renderStatusBar();
 initFirebase();
+renderHistory();
+renderStages();
 renderView();
 
 })();
