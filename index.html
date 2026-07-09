@@ -423,6 +423,98 @@ code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-
   padding:4px 10px;border-radius:20px;
   font-size:11px;font-weight:800;letter-spacing:.6px;
 }
+
+/* galeria de fotos no modal de finalizar */
+.photo-gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(96px, 1fr));
+  gap:8px;
+  margin:10px 0 4px;
+  max-height:260px;
+  overflow-y:auto;
+  padding:4px;
+  background:var(--bg-base);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+}
+.photo-gallery:empty{display:none;}
+.photo-thumb{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:8px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  background:var(--bg-panel);
+  cursor:pointer;
+  transition:transform .12s ease, border-color .12s ease;
+}
+.photo-thumb:active{transform:scale(.96);}
+.photo-thumb:hover{border-color:var(--accent);}
+.photo-thumb img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.photo-thumb .ph-num{
+  position:absolute;top:4px;left:4px;
+  background:rgba(0,0,0,.65);color:#fff;
+  font-size:10px;font-weight:800;letter-spacing:.3px;
+  padding:2px 6px;border-radius:10px;
+  font-family:var(--font-mono);
+}
+.photo-thumb .ph-tag{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg, transparent, rgba(0,0,0,.75));
+  color:#fff;
+  font-size:10px;font-weight:700;letter-spacing:.3px;
+  padding:6px 4px 4px;
+  text-align:center;
+  text-transform:uppercase;
+}
+
+/* lightbox para visualizar a foto em tamanho grande */
+.lightbox-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);
+  z-index:90;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+  padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+}
+.lightbox-overlay.show{opacity:1;pointer-events:auto;}
+.lightbox-img{
+  max-width:100%;max-height:80vh;
+  object-fit:contain;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg-base);
+}
+.lightbox-info{
+  margin-top:12px;color:#fff;font-size:13px;font-weight:600;
+  text-align:center;font-family:var(--font-mono);
+  background:rgba(0,0,0,.5);
+  padding:8px 14px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.15);
+}
+.lightbox-close{
+  position:absolute;top:16px;right:16px;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  z-index:91;
+}
+.lightbox-close:active{transform:scale(.92);}
+.lightbox-nav{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.lightbox-nav:active{transform:translateY(-50%) scale(.92);}
+.lightbox-nav.prev{left:12px;}
+.lightbox-nav.next{right:12px;}
+.lightbox-nav:disabled{opacity:.3;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -605,11 +697,23 @@ code.inline{background:var(--bg-panel-2);padding:1px 6px;border-radius:5px;font-
   <div class="modal-box">
     <div class="modal-title">Finalizar pesagem?</div>
     <p class="modal-desc" id="finalizarResumo">—</p>
+    <div class="section-label" style="margin:10px 0 6px;">📷 Fotos anexadas <span class="badge" id="finalizarFotoCount">0</span></div>
+    <div class="photo-gallery" id="finalizarGaleria"></div>
+    <p class="small-note" id="finalizarGaleriaHint">Toque em uma foto para visualizar em tamanho grande.</p>
     <div class="btn-block-row">
       <button class="btn btn-secondary" id="btnFinalizarCancelar">Voltar</button>
       <button class="btn btn-good" id="btnFinalizarConfirmar">Confirmar e enviar</button>
     </div>
   </div>
+</div>
+
+<!-- LIGHTBOX: visualizar foto em tamanho grande -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Fechar">✕</button>
+  <button class="lightbox-nav prev" id="lightboxPrev" aria-label="Anterior">‹</button>
+  <img class="lightbox-img" id="lightboxImg" alt="Foto em tamanho grande">
+  <button class="lightbox-nav next" id="lightboxNext" aria-label="Próxima">›</button>
+  <div class="lightbox-info" id="lightboxInfo">—</div>
 </div>
 
 <!-- MODAL: CANCELAR PESAGEM -->
@@ -1686,6 +1790,34 @@ document.getElementById('btnFinalizar').addEventListener('click', function(){
     'Itens registrados: <b>' + state.itens.length + '</b><br>' +
     '📷 <b>' + state.itens.length + ' foto(s)</b> anexada(s)<br>' +
     'Será enviado para o <b>Administrativo</b> de todos os dispositivos conectados.';
+
+  // Monta a galeria de miniaturas no modal de finalização
+  var galeria = document.getElementById('finalizarGaleria');
+  var countEl = document.getElementById('finalizarFotoCount');
+  var hintEl  = document.getElementById('finalizarGaleriaHint');
+  galeria.innerHTML = '';
+  countEl.textContent = state.itens.length;
+  state.itens.forEach(function(it, idx){
+    var tagLabel = it.tipo === 'abertura' ? 'Abertura' : ('Fechar');
+    var tagShort = it.tipo === 'abertura' ? 'ABERTURA' : 'FECHAR';
+    var thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.setAttribute('data-photo-idx', String(idx));
+    thumb.innerHTML =
+      '<img src="' + it.foto + '" alt="Foto ' + (idx+1) + '">' +
+      '<span class="ph-num">' + (idx+1) + '</span>' +
+      '<span class="ph-tag">' + tagShort + (it.nome ? ' · ' + escapeHtml(it.nome) : '') + '</span>';
+    thumb.addEventListener('click', function(){
+      openLightbox(idx, state.itens);
+    });
+    galeria.appendChild(thumb);
+  });
+  if (state.itens.length === 0){
+    hintEl.classList.add('hidden');
+  } else {
+    hintEl.classList.remove('hidden');
+  }
+
   openModal('modalFinalizar');
 });
 document.getElementById('btnFinalizarCancelar').addEventListener('click', function(){
@@ -1708,11 +1840,67 @@ document.getElementById('btnFinalizarConfirmar').addEventListener('click', funct
   saveRecord(record, function(){
     btn.disabled = false;
     closeModal('modalFinalizar');
+    closeLightbox();
     resetWeighing();
     renderView();
     // som também toca no próprio dispositivo que finalizou
     playNotifSound();
   });
+});
+
+/* ========================================================================
+   LIGHTBOX: visualizar foto ampliada com navegação
+======================================================================== */
+var lightboxItens = [];
+var lightboxIndex = 0;
+
+function openLightbox(idx, itens){
+  lightboxItens = (itens && itens.length) ? itens : [];
+  lightboxIndex = idx || 0;
+  if (lightboxIndex < 0) lightboxIndex = 0;
+  if (lightboxIndex >= lightboxItens.length) lightboxIndex = lightboxItens.length - 1;
+  if (lightboxItens.length === 0) return;
+  document.getElementById('lightboxOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  renderLightbox();
+}
+function closeLightbox(){
+  document.getElementById('lightboxOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+  lightboxItens = [];
+  lightboxIndex = 0;
+}
+function renderLightbox(){
+  if (lightboxItens.length === 0) return;
+  var it = lightboxItens[lightboxIndex];
+  if (!it || !it.foto){ closeLightbox(); return; }
+  document.getElementById('lightboxImg').src = it.foto;
+  var label = (lightboxIndex+1) + ' / ' + lightboxItens.length + ' · ';
+  label += it.tipo === 'abertura' ? 'Abertura' : ('Fechar ' + (it.nome || ''));
+  if (it.horaLabel) label += ' · ' + it.horaLabel;
+  document.getElementById('lightboxInfo').textContent = label;
+  document.getElementById('lightboxPrev').disabled = (lightboxIndex <= 0);
+  document.getElementById('lightboxNext').disabled = (lightboxIndex >= lightboxItens.length - 1);
+}
+function lightboxStep(delta){
+  var next = lightboxIndex + delta;
+  if (next < 0 || next >= lightboxItens.length) return;
+  lightboxIndex = next;
+  renderLightbox();
+}
+
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.getElementById('lightboxPrev').addEventListener('click', function(){ lightboxStep(-1); });
+document.getElementById('lightboxNext').addEventListener('click', function(){ lightboxStep(1); });
+document.getElementById('lightboxOverlay').addEventListener('click', function(e){
+  // fecha ao clicar fora da imagem/navegação
+  if (e.target && e.target.id === 'lightboxOverlay') closeLightbox();
+});
+document.addEventListener('keydown', function(e){
+  if (!document.getElementById('lightboxOverlay').classList.contains('show')) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft')  lightboxStep(-1);
+  else if (e.key === 'ArrowRight') lightboxStep(1);
 });
 
 /* ========================================================================
